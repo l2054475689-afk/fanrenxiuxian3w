@@ -1,5 +1,5 @@
 """
-统御系统页面
+统御系统页面 — 美化版 v2
 """
 import flet as ft
 from datetime import date
@@ -13,77 +13,133 @@ class TongyuPage(ft.Column):
 
     def __init__(self, page: ft.Page, tongyu_service: TongyuService):
         super().__init__()
-        self.page = page
+        self._page = page
         self.svc = tongyu_service
         self.spacing = 0
         self.scroll = ft.ScrollMode.AUTO
         self.expand = True
         self._selected_person_id = None
 
+    # ── colours ──────────────────────────────────────────
+    _PURPLE_START = "#667eea"
+    _PURPLE_END   = "#764ba2"
+    _REL_COLORS = {
+        "家人": "#e91e63",
+        "朋友": "#2196f3",
+        "同事": "#ff9800",
+        "导师": "#9c27b0",
+        "同学": "#4caf50",
+        "其他": "#607d8b",
+    }
+
+    # ── build ────────────────────────────────────────────
     def build(self):
         if self._selected_person_id:
             self._build_person_detail()
         else:
             self._build_people_list()
 
+    # ══════════════════════════════════════════════════════
+    # 人物列表视图
+    # ══════════════════════════════════════════════════════
     def _build_people_list(self):
-        """人物列表视图"""
         people = self.svc.get_people()
         stats = self.svc.get_relationship_stats()
 
         self.controls = [
+            # ── 页面标题 ──
             ft.Container(
                 content=ft.Row([
-                    ft.Text("👥 统御", size=20, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
-                    ft.Text(f"{stats['total_people']}人", size=14, color=C.TEXT_SECONDARY),
-                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                padding=ft.padding.only(left=20, right=20, top=16, bottom=8),
+                    ft.Text("👥", size=24),
+                    ft.Text("统御", size=22, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
+                    ft.Container(expand=True),
+                    ft.Container(
+                        content=ft.Text(f"{stats['total_people']}人", size=13, color="white", weight=ft.FontWeight.W_500),
+                        padding=ft.padding.symmetric(horizontal=10, vertical=4),
+                        border_radius=12,
+                        bgcolor=C.PRIMARY,
+                    ),
+                ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                padding=ft.padding.only(left=20, right=20, top=20, bottom=12),
             ),
-            # 统计卡片
-            card_container(ft.Row([
-                self._stat_item("👥", str(stats["total_people"]), "总人数"),
-                self._stat_item("💬", str(stats["monthly_interactions"]), "本月互动"),
-                self._stat_item("⚠️", str(stats["neglected"]), "需关注"),
-            ], alignment=ft.MainAxisAlignment.SPACE_AROUND)),
+
+            # ── 统计卡片 ──
+            ft.Container(
+                content=ft.Row([
+                    self._stat_card("👥", str(stats["total_people"]), "总人数", "#e3f2fd"),
+                    self._stat_card("💬", str(stats["monthly_interactions"]), "本月互动", "#e8f5e9"),
+                    self._stat_card("⚠️", str(stats["neglected"]), "需关注", "#fff3e0"),
+                ], alignment=ft.MainAxisAlignment.SPACE_EVENLY),
+                padding=ft.padding.symmetric(horizontal=12),
+            ),
         ]
 
-        # 生日提醒
+        # ── 生日提醒 ──
         birthdays = self.svc.get_upcoming_birthdays()
         if birthdays:
-            self.controls.append(section_title("🎂 即将到来的生日"))
+            self.controls.append(self._section_header("🎂", "即将到来的生日"))
             for b in birthdays:
-                self.controls.append(card_container(
-                    content=ft.Row([
-                        ft.Text(b["avatar_emoji"], size=24),
-                        ft.Column([
-                            ft.Text(b["name"], size=14, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
-                            ft.Text(f"{b['days_until']}天后", size=12, color=C.WARNING),
-                        ], spacing=2, expand=True),
-                    ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                ))
+                self.controls.append(
+                    ft.Container(
+                        content=ft.Row([
+                            ft.Container(
+                                content=ft.Text(b["avatar_emoji"], size=24),
+                                width=44, height=44, border_radius=22,
+                                bgcolor=ft.Colors.with_opacity(0.1, "#e91e63"),
+                                alignment=ft.alignment.center,
+                            ),
+                            ft.Column([
+                                ft.Text(b["name"], size=14, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
+                                ft.Text(b["birthday"], size=12, color=C.TEXT_HINT),
+                            ], spacing=2, expand=True),
+                            ft.Container(
+                                content=ft.Text(
+                                    f"{b['days_until']}天后" if b["days_until"] > 0 else "今天!",
+                                    size=12, weight=ft.FontWeight.BOLD,
+                                    color="#e91e63" if b["days_until"] <= 3 else C.WARNING,
+                                ),
+                                padding=ft.padding.symmetric(horizontal=10, vertical=4),
+                                border_radius=12,
+                                bgcolor=ft.Colors.with_opacity(0.1, "#e91e63"),
+                            ),
+                        ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                        padding=14,
+                        margin=ft.margin.symmetric(horizontal=16, vertical=3),
+                        border_radius=12,
+                        bgcolor=C.CARD_LIGHT,
+                        shadow=ft.BoxShadow(
+                            spread_radius=0, blur_radius=6,
+                            color=ft.Colors.with_opacity(0.04, ft.Colors.BLACK),
+                            offset=ft.Offset(0, 2),
+                        ),
+                    )
+                )
 
-        # 人物列表
-        self.controls.append(section_title("人物档案"))
+        # ── 人物列表 ──
+        self.controls.append(self._section_header("📇", "人物档案"))
         for p in people:
             self.controls.append(self._person_card(p))
 
-        # 添加按钮
+        # ── 添加按钮 ──
         self.controls.append(
             ft.Container(
                 content=ft.Row([
                     ft.Icon(ft.Icons.ADD_CIRCLE_OUTLINE, color=C.PRIMARY, size=20),
-                    ft.Text("添加人物", size=14, color=C.PRIMARY),
-                ], alignment=ft.MainAxisAlignment.CENTER),
-                padding=16, margin=ft.margin.symmetric(horizontal=16, vertical=8),
-                border=ft.border.all(1, ft.Colors.with_opacity(0.3, C.PRIMARY)),
+                    ft.Text("添加人物", size=14, weight=ft.FontWeight.W_500, color=C.PRIMARY),
+                ], alignment=ft.MainAxisAlignment.CENTER, spacing=6),
+                padding=16,
+                margin=ft.margin.symmetric(horizontal=16, vertical=8),
+                border=ft.border.all(1.5, ft.Colors.with_opacity(0.35, C.PRIMARY)),
                 border_radius=12,
                 on_click=lambda e: self._show_add_person(),
             )
         )
         self.controls.append(ft.Container(height=80))
 
+    # ══════════════════════════════════════════════════════
+    # 人物详情视图
+    # ══════════════════════════════════════════════════════
     def _build_person_detail(self):
-        """人物详情视图"""
         detail = self.svc.get_person_detail(self._selected_person_id)
         if not detail:
             self._selected_person_id = None
@@ -91,80 +147,205 @@ class TongyuPage(ft.Column):
             return
 
         events = self.svc.get_events(self._selected_person_id)
+        rel_color = self._REL_COLORS.get(detail["relationship_type"], C.PRIMARY)
 
         self.controls = [
-            # 返回按钮
+            # ── 返回 + 头部 ──
+            ft.Container(
+                content=ft.Column([
+                    ft.Row([
+                        ft.IconButton(
+                            icon=ft.Icons.ARROW_BACK_IOS_NEW, icon_size=20,
+                            icon_color=C.TEXT_PRIMARY,
+                            on_click=lambda e: self._go_back(),
+                        ),
+                        ft.Container(expand=True),
+                    ]),
+                    # 大头像 + 名字
+                    ft.Column([
+                        ft.Container(
+                            content=ft.Text(detail["avatar_emoji"], size=48),
+                            width=80, height=80, border_radius=40,
+                            bgcolor=ft.Colors.with_opacity(0.1, rel_color),
+                            alignment=ft.alignment.center,
+                        ),
+                        ft.Text(detail["name"], size=22, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
+                        ft.Container(
+                            content=ft.Text(
+                                detail["relationship_type"], size=12,
+                                weight=ft.FontWeight.W_500, color="white",
+                            ),
+                            padding=ft.padding.symmetric(horizontal=14, vertical=4),
+                            border_radius=14,
+                            bgcolor=rel_color,
+                        ),
+                    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=6),
+                ]),
+                padding=ft.padding.only(left=8, right=8, top=8, bottom=16),
+            ),
+
+            # ── 基本信息 ──
             ft.Container(
                 content=ft.Row([
-                    ft.IconButton(icon=ft.Icons.ARROW_BACK, on_click=lambda e: self._go_back()),
-                    ft.Text(f"{detail['avatar_emoji']} {detail['name']}", size=20, weight=ft.FontWeight.BOLD),
-                ]),
-                padding=ft.padding.only(left=8, top=8),
+                    self._info_chip("📅", "认识", detail["met_date"] or "未记录"),
+                    self._info_chip("🎂", "生日", detail["birthday"] or "未记录"),
+                ], alignment=ft.MainAxisAlignment.SPACE_EVENLY),
+                padding=ft.padding.symmetric(horizontal=16, vertical=4),
             ),
-            # 基本信息
-            card_container(ft.Column([
-                ft.Row([
-                    ft.Text("关系", size=13, color=C.TEXT_HINT, width=60),
-                    ft.Text(detail["relationship_type"], size=14, color=C.TEXT_PRIMARY),
-                ]),
-                ft.Row([
-                    ft.Text("认识", size=13, color=C.TEXT_HINT, width=60),
-                    ft.Text(detail["met_date"] or "未记录", size=14, color=C.TEXT_PRIMARY),
-                ]),
-                ft.Row([
-                    ft.Text("生日", size=13, color=C.TEXT_HINT, width=60),
-                    ft.Text(detail["birthday"] or "未记录", size=14, color=C.TEXT_PRIMARY),
-                ]),
-            ], spacing=8)),
 
-            # 性格标签
-            section_title("性格标签"),
-            self._tags_card(detail.get("personality_tags", [])),
+            # ── 性格标签 ──
+            self._section_header("🧠", "性格标签"),
+            self._personality_chips(detail.get("personality_tags", [])),
 
-            # 相处要点
-            section_title("相处要点"),
-            card_container(
+            # ── 相处要点 ──
+            self._section_header("📝", "相处要点"),
+            ft.Container(
                 content=ft.Column([
-                    ft.Text(detail.get("notes") or "暂无记录，点击编辑", size=14,
-                            color=C.TEXT_PRIMARY if detail.get("notes") else C.TEXT_HINT),
-                    ft.TextButton("编辑", on_click=lambda e: self._edit_notes(detail)),
+                    ft.Text(
+                        detail.get("notes") or "暂无记录，点击编辑",
+                        size=14,
+                        color=C.TEXT_PRIMARY if detail.get("notes") else C.TEXT_HINT,
+                    ),
+                    ft.Container(
+                        content=ft.Text("编辑", size=13, color=C.PRIMARY, weight=ft.FontWeight.W_500),
+                        on_click=lambda e: self._edit_notes(detail),
+                        padding=ft.padding.only(top=8),
+                    ),
                 ]),
+                padding=16,
+                margin=ft.margin.symmetric(horizontal=16, vertical=4),
+                border_radius=12,
+                bgcolor=C.CARD_LIGHT,
+                shadow=ft.BoxShadow(
+                    spread_radius=0, blur_radius=6,
+                    color=ft.Colors.with_opacity(0.04, ft.Colors.BLACK),
+                    offset=ft.Offset(0, 2),
+                ),
             ),
 
-            # 事件记录
-            section_title("互动事件"),
+            # ── 事件时间线 ──
+            self._section_header("📖", "互动事件"),
         ]
 
-        for ev in events:
-            self.controls.append(self._event_card(ev))
+        if events:
+            for idx, ev in enumerate(events):
+                self.controls.append(self._event_timeline_item(ev, is_last=(idx == len(events) - 1)))
+        else:
+            self.controls.append(
+                ft.Container(
+                    content=ft.Text("暂无互动记录", size=13, color=C.TEXT_HINT, text_align=ft.TextAlign.CENTER),
+                    padding=20,
+                    margin=ft.margin.symmetric(horizontal=16),
+                )
+            )
 
         self.controls.append(
             ft.Container(
-                content=ft.ElevatedButton("记录新事件", icon=ft.Icons.ADD, on_click=lambda e: self._show_add_event()),
-                alignment=ft.alignment.center, padding=12,
+                content=ft.Container(
+                    content=ft.Row([
+                        ft.Icon(ft.Icons.ADD, color="white", size=18),
+                        ft.Text("记录新事件", size=14, weight=ft.FontWeight.W_600, color="white"),
+                    ], alignment=ft.MainAxisAlignment.CENTER, spacing=6),
+                    padding=ft.padding.symmetric(horizontal=24, vertical=12),
+                    border_radius=24,
+                    bgcolor=C.PRIMARY,
+                    on_click=lambda e: self._show_add_event(),
+                    shadow=ft.BoxShadow(
+                        spread_radius=0, blur_radius=8,
+                        color=ft.Colors.with_opacity(0.25, C.PRIMARY),
+                        offset=ft.Offset(0, 2),
+                    ),
+                ),
+                alignment=ft.alignment.center,
+                padding=16,
             )
         )
         self.controls.append(ft.Container(height=80))
 
-    def _person_card(self, person: dict) -> ft.Container:
-        """人物卡片"""
-        return card_container(
+    # ── 组件 ─────────────────────────────────────────────
+
+    def _section_header(self, emoji: str, title: str) -> ft.Container:
+        return ft.Container(
             content=ft.Row([
-                ft.Text(person["avatar_emoji"], size=32),
+                ft.Text(emoji, size=18),
+                ft.Text(title, size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
+            ], spacing=6),
+            padding=ft.padding.only(left=20, top=16, bottom=6),
+        )
+
+    def _stat_card(self, emoji: str, value: str, label: str, bg_color: str) -> ft.Container:
+        return ft.Container(
+            content=ft.Column([
+                ft.Text(emoji, size=22),
+                ft.Text(value, size=24, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
+                ft.Text(label, size=11, color=C.TEXT_HINT),
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2),
+            padding=ft.padding.symmetric(horizontal=16, vertical=12),
+            border_radius=14,
+            bgcolor=bg_color,
+            expand=True,
+        )
+
+    def _person_card(self, person: dict) -> ft.Container:
+        rel_color = self._REL_COLORS.get(person["relationship_type"], C.PRIMARY)
+        return ft.Container(
+            content=ft.Row([
+                ft.Container(
+                    content=ft.Text(person["avatar_emoji"], size=28),
+                    width=50, height=50, border_radius=25,
+                    bgcolor=ft.Colors.with_opacity(0.1, rel_color),
+                    alignment=ft.alignment.center,
+                ),
                 ft.Column([
-                    ft.Text(person["name"], size=16, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
-                    ft.Text(person["relationship_type"], size=12, color=C.TEXT_SECONDARY),
-                ], spacing=2, expand=True),
-                ft.Icon(ft.Icons.CHEVRON_RIGHT, color=C.TEXT_HINT),
+                    ft.Text(person["name"], size=16, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
+                    ft.Container(
+                        content=ft.Text(
+                            person["relationship_type"], size=10,
+                            color=rel_color, weight=ft.FontWeight.W_500,
+                        ),
+                        padding=ft.padding.symmetric(horizontal=8, vertical=2),
+                        border_radius=8,
+                        bgcolor=ft.Colors.with_opacity(0.1, rel_color),
+                    ),
+                ], spacing=4, expand=True),
+                ft.Icon(ft.Icons.CHEVRON_RIGHT, color=C.TEXT_HINT, size=20),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+            padding=14,
+            margin=ft.margin.symmetric(horizontal=16, vertical=3),
+            border_radius=14,
+            bgcolor=C.CARD_LIGHT,
+            shadow=ft.BoxShadow(
+                spread_radius=0, blur_radius=6,
+                color=ft.Colors.with_opacity(0.05, ft.Colors.BLACK),
+                offset=ft.Offset(0, 2),
+            ),
             on_click=lambda e, pid=person["id"]: self._select_person(pid),
         )
 
-    def _tags_card(self, tags: list) -> ft.Container:
-        """性格标签卡片"""
+    def _info_chip(self, emoji: str, label: str, value: str) -> ft.Container:
+        return ft.Container(
+            content=ft.Row([
+                ft.Text(emoji, size=16),
+                ft.Column([
+                    ft.Text(label, size=11, color=C.TEXT_HINT),
+                    ft.Text(value, size=13, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
+                ], spacing=1),
+            ], spacing=8),
+            padding=ft.padding.symmetric(horizontal=14, vertical=10),
+            border_radius=12,
+            bgcolor=C.CARD_LIGHT,
+            shadow=ft.BoxShadow(
+                spread_radius=0, blur_radius=4,
+                color=ft.Colors.with_opacity(0.04, ft.Colors.BLACK),
+                offset=ft.Offset(0, 1),
+            ),
+        )
+
+    def _personality_chips(self, tags: list) -> ft.Container:
         if not tags:
-            return card_container(
+            return ft.Container(
                 content=ft.Text("暂无标签", size=13, color=C.TEXT_HINT),
+                padding=ft.padding.symmetric(horizontal=20, vertical=8),
             )
 
         chips = []
@@ -173,53 +354,80 @@ class TongyuPage(ft.Column):
                 dim = next((d for d in PERSONALITY_DIMENSIONS if d["name"] == t["tag_name"]), None)
                 if dim:
                     label = f"{dim['left']}↔{dim['right']}: {t['tag_value']}"
-                    chips.append(ft.Chip(label=ft.Text(label, size=11), bgcolor=ft.Colors.with_opacity(0.1, C.PRIMARY)))
+                    chips.append(ft.Chip(
+                        label=ft.Text(label, size=11),
+                        bgcolor=ft.Colors.with_opacity(0.08, C.PRIMARY),
+                    ))
             elif t["category"] == "communication":
-                chips.append(ft.Chip(label=ft.Text(t["tag_name"], size=11), bgcolor=ft.Colors.with_opacity(0.1, C.SUCCESS)))
+                chips.append(ft.Chip(
+                    label=ft.Text(t["tag_name"], size=11),
+                    bgcolor=ft.Colors.with_opacity(0.08, C.SUCCESS),
+                ))
             else:
-                chips.append(ft.Chip(label=ft.Text(f"#{t['tag_name']}", size=11), bgcolor=ft.Colors.with_opacity(0.1, C.WARNING)))
+                chips.append(ft.Chip(
+                    label=ft.Text(f"#{t['tag_name']}", size=11),
+                    bgcolor=ft.Colors.with_opacity(0.08, C.WARNING),
+                ))
 
-        return card_container(
-            content=ft.Row(chips, wrap=True, spacing=4, run_spacing=4),
+        return ft.Container(
+            content=ft.Row(chips, wrap=True, spacing=6, run_spacing=6),
+            padding=ft.padding.symmetric(horizontal=16, vertical=4),
         )
 
-    def _event_card(self, event: dict) -> ft.Container:
-        """事件卡片"""
+    def _event_timeline_item(self, event: dict, is_last: bool = False) -> ft.Container:
         tags = event.get("impression_tags", [])
         if isinstance(tags, str):
             import json
             try:
                 tags = json.loads(tags)
-            except:
+            except Exception:
                 tags = []
 
-        return card_container(
-            content=ft.Column([
-                ft.Row([
-                    ft.Text(f"📅 {event['event_date']}", size=12, color=C.TEXT_HINT),
-                    ft.Text(event.get("location") or "", size=12, color=C.TEXT_HINT),
-                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                ft.Text(event["event_description"], size=14, color=C.TEXT_PRIMARY),
-                ft.Row(
-                    [ft.Container(
-                        content=ft.Text(t, size=10, color=C.PRIMARY),
-                        padding=ft.padding.symmetric(horizontal=8, vertical=2),
-                        border_radius=10, bgcolor=ft.Colors.with_opacity(0.1, C.PRIMARY),
-                    ) for t in (tags[:4] if tags else [])],
-                    spacing=4,
-                ) if tags else ft.Container(),
-                ft.Text(event.get("key_info") or "", size=12, color=C.TEXT_SECONDARY) if event.get("key_info") else ft.Container(),
-            ], spacing=6),
+        tag_chips = []
+        for t in (tags[:4] if tags else []):
+            tag_chips.append(
+                ft.Container(
+                    content=ft.Text(t, size=10, color=C.PRIMARY),
+                    padding=ft.padding.symmetric(horizontal=8, vertical=2),
+                    border_radius=10,
+                    bgcolor=ft.Colors.with_opacity(0.08, C.PRIMARY),
+                )
+            )
+
+        return ft.Container(
+            content=ft.Row([
+                # 时间线竖线 + 圆点
+                ft.Column([
+                    ft.Container(
+                        width=10, height=10, border_radius=5,
+                        bgcolor=C.PRIMARY,
+                    ),
+                    ft.Container(
+                        width=2, height=60,
+                        bgcolor=ft.Colors.with_opacity(0.15, C.PRIMARY),
+                    ) if not is_last else ft.Container(width=2),
+                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=0),
+                # 内容
+                ft.Container(
+                    content=ft.Column([
+                        ft.Text(f"📅 {event['event_date']}", size=12, color=C.TEXT_HINT),
+                        ft.Text(event["event_description"], size=14, color=C.TEXT_PRIMARY),
+                        ft.Row(tag_chips, spacing=4) if tag_chips else ft.Container(),
+                        ft.Text(
+                            event.get("key_info") or "",
+                            size=12, color=C.TEXT_SECONDARY,
+                        ) if event.get("key_info") else ft.Container(),
+                    ], spacing=4),
+                    padding=ft.padding.only(left=12, bottom=8),
+                    expand=True,
+                ),
+            ], vertical_alignment=ft.CrossAxisAlignment.START, spacing=8),
+            padding=ft.padding.only(left=24, right=16, top=4),
         )
 
-    def _stat_item(self, emoji: str, value: str, label: str) -> ft.Column:
-        return ft.Column([
-            ft.Text(emoji, size=20),
-            ft.Text(value, size=18, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
-            ft.Text(label, size=11, color=C.TEXT_HINT),
-        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2)
-
-    # === 操作 ===
+    # ══════════════════════════════════════════════════════
+    # 操作
+    # ══════════════════════════════════════════════════════
 
     def _select_person(self, person_id: int):
         self._selected_person_id = person_id
@@ -241,20 +449,20 @@ class TongyuPage(ft.Column):
             if not name:
                 return
             result = self.svc.create_person(name, type_dd.value)
-            self.page.close(dlg)
+            self._page.close(dlg)
             if result["success"]:
-                self.page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
             self._refresh()
 
         dlg = ft.AlertDialog(
             title=ft.Text("添加人物"),
             content=ft.Column([name_field, type_dd], tight=True, spacing=8),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self.page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
                 ft.TextButton("添加", on_click=on_save),
             ],
         )
-        self.page.open(dlg)
+        self._page.open(dlg)
 
     def _show_add_event(self):
         desc_field = ft.TextField(label="事件描述", autofocus=True, multiline=True)
@@ -270,20 +478,20 @@ class TongyuPage(ft.Column):
                 location=location_field.value,
                 key_info=key_info_field.value,
             )
-            self.page.close(dlg)
+            self._page.close(dlg)
             if result["success"]:
-                self.page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
             self._refresh()
 
         dlg = ft.AlertDialog(
             title=ft.Text("记录事件"),
             content=ft.Column([desc_field, location_field, key_info_field], tight=True, spacing=8),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self.page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self.page.open(dlg)
+        self._page.open(dlg)
 
     def _edit_notes(self, detail: dict):
         notes_field = ft.TextField(
@@ -293,18 +501,18 @@ class TongyuPage(ft.Column):
 
         def on_save(e):
             self.svc.update_person(detail["id"], notes=notes_field.value)
-            self.page.close(dlg)
+            self._page.close(dlg)
             self._refresh()
 
         dlg = ft.AlertDialog(
             title=ft.Text("编辑相处要点"),
             content=notes_field,
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self.page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self.page.open(dlg)
+        self._page.open(dlg)
 
     def _refresh(self):
         self.controls.clear()

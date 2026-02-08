@@ -12,6 +12,15 @@ from services.tongyu_service import TongyuService
 from services.panel_service import PanelService
 from services.constants import Colors as C
 
+from ui.styles import (
+    ALIGN_CENTER, ALIGN_TOP_LEFT, ALIGN_BOTTOM_RIGHT,
+    ALIGN_TOP_CENTER, ALIGN_BOTTOM_CENTER, ALIGN_CENTER_LEFT, ALIGN_CENTER_RIGHT,
+    XiuxianColors, gradient_purple_gold, shadow_glow, shadow_soft,
+    anim_default, anim_smooth, anim_fade,
+    styled_textfield, primary_button,
+    decorative_circle, star_particle,
+)
+
 from ui.pages.panel_page import PanelPage
 from ui.pages.xinjing_page import XinjingPage
 from ui.pages.jingjie_page import JingjiePage
@@ -52,12 +61,16 @@ def main(page: ft.Page):
 
 
 def _show_onboarding(page: ft.Page, db: DatabaseManager, on_complete):
-    """首次启动引导"""
-    year_field = ft.TextField(
-        label="出生年份", hint_text="例如：1998",
+    """首次启动引导 — 修仙主题"""
+
+    # 输入框
+    year_field = styled_textfield(
+        label="出生年份",
+        hint_text="例如：1998",
         keyboard_type=ft.KeyboardType.NUMBER,
         text_align=ft.TextAlign.CENTER,
-        text_size=24,
+        text_size=22,
+        width=260,
     )
 
     def on_start(e):
@@ -71,35 +84,111 @@ def _show_onboarding(page: ft.Page, db: DatabaseManager, on_complete):
         except (ValueError, TypeError):
             page.open(ft.SnackBar(ft.Text("请输入有效的年份"), bgcolor=C.ERROR))
 
+    # 装饰性背景元素
+    bg_decorations = [
+        # 大光晕
+        decorative_circle(size=200, color="#ffffff", opacity=0.04, top=-40, right=-60),
+        decorative_circle(size=160, color="#fbbf24", opacity=0.03, bottom=120, left=-40),
+        decorative_circle(size=100, color="#a78bfa", opacity=0.06, top=200, right=20),
+        # 星光粒子
+        star_particle(size=3, color="#fbbf24", opacity=0.7, top=80, left=50),
+        star_particle(size=4, color="#ffffff", opacity=0.5, top=150, left=300),
+        star_particle(size=3, color="#fbbf24", opacity=0.6, top=280, left=80),
+        star_particle(size=5, color="#ffffff", opacity=0.4, top=350, left=250),
+        star_particle(size=3, color="#c4b5fd", opacity=0.7, top=450, left=120),
+        star_particle(size=4, color="#fbbf24", opacity=0.5, top=520, left=320),
+        star_particle(size=3, color="#ffffff", opacity=0.6, top=600, left=60),
+        star_particle(size=4, color="#c4b5fd", opacity=0.5, top=680, left=280),
+    ]
+
+    # 主内容
+    main_content = ft.Column(
+        [
+            ft.Container(height=80),
+            # 图标区域 — 带发光效果
+            ft.Container(
+                content=ft.Text("⚔️", size=72, text_align=ft.TextAlign.CENTER),
+                width=120,
+                height=120,
+                border_radius=60,
+                bgcolor=ft.Colors.with_opacity(0.1, "#ffffff"),
+                alignment=ALIGN_CENTER,
+                shadow=shadow_glow(color=XiuxianColors.GOLD_BRIGHT, opacity=0.25, blur=30),
+                animate=anim_fade(),
+            ),
+            ft.Container(height=8),
+            # 标题
+            ft.Text(
+                "凡人修仙3w天",
+                size=30,
+                weight=ft.FontWeight.W_800,
+                text_align=ft.TextAlign.CENTER,
+                color="#ffffff",
+            ),
+            # 副标题
+            ft.Text(
+                "人生如修仙，三万天的修炼之旅",
+                size=14,
+                text_align=ft.TextAlign.CENTER,
+                color=ft.Colors.with_opacity(0.7, "#ffffff"),
+            ),
+            ft.Container(height=4),
+            # 分隔装饰线
+            ft.Container(
+                width=60,
+                height=2,
+                border_radius=1,
+                bgcolor=ft.Colors.with_opacity(0.3, XiuxianColors.GOLD_BRIGHT),
+            ),
+            ft.Container(height=36),
+            # 提示文字
+            ft.Text(
+                "✦ 请输入你的出生年份 ✦",
+                size=15,
+                text_align=ft.TextAlign.CENTER,
+                color=ft.Colors.with_opacity(0.85, "#ffffff"),
+                weight=ft.FontWeight.W_500,
+            ),
+            ft.Container(height=8),
+            # 输入框
+            ft.Container(
+                content=year_field,
+                width=260,
+            ),
+            ft.Container(height=24),
+            # 开始按钮
+            primary_button("踏入仙途", on_click=on_start, width=220, height=50),
+            ft.Container(height=40),
+            # 底部点缀文字
+            ft.Text(
+                "— 道可道，非常道 —",
+                size=12,
+                text_align=ft.TextAlign.CENTER,
+                color=ft.Colors.with_opacity(0.35, "#ffffff"),
+                italic=True,
+            ),
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        spacing=8,
+    )
+
+    # 组合：渐变背景 + 装饰 + 内容
     page.add(
         ft.Container(
-            content=ft.Column([
-                ft.Container(height=80),
-                ft.Text("⚔️", size=64, text_align=ft.TextAlign.CENTER),
-                ft.Text("凡人修仙3w天", size=28, weight=ft.FontWeight.BOLD,
-                         text_align=ft.TextAlign.CENTER, color=C.PRIMARY),
-                ft.Text("人生如修仙，三万天的修炼之旅", size=14,
-                         text_align=ft.TextAlign.CENTER, color=C.TEXT_SECONDARY),
-                ft.Container(height=40),
-                ft.Text("你的出生年份是？", size=16, text_align=ft.TextAlign.CENTER, color=C.TEXT_PRIMARY),
-                ft.Container(
-                    content=year_field,
-                    width=200,
-                    alignment=ft.alignment.center,
-                ),
-                ft.Container(height=20),
-                ft.ElevatedButton(
-                    "开始修炼",
-                    width=200, height=48,
-                    bgcolor=C.PRIMARY, color="white",
-                    on_click=on_start,
-                ),
-            ],
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                spacing=12,
+            content=ft.Stack(
+                [
+                    # 装饰层
+                    *bg_decorations,
+                    # 内容层
+                    ft.Container(
+                        content=main_content,
+                        expand=True,
+                        alignment=ALIGN_CENTER,
+                    ),
+                ],
             ),
             expand=True,
-            alignment=ft.alignment.center,
+            gradient=gradient_purple_gold(),
         )
     )
 
@@ -164,4 +253,4 @@ def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc
 
 
 if __name__ == "__main__":
-    ft.run(main)
+    ft.run(main, port=8000)

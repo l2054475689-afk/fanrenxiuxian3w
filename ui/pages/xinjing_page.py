@@ -1,6 +1,6 @@
 """
 心境系统页面 v2
-美化版：蓝紫渐变头部、绿色正面卡片、暗红心魔卡片、BarChart 统计、优化对话框
+美化版：蓝紫渐变头部、绿色正面卡片、暗红心魔卡片、手动柱状图统计、优化对话框
 """
 import flet as ft
 from services.spirit_service import SpiritService
@@ -85,7 +85,7 @@ class XinjingPage(ft.Column):
             ], spacing=2, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             padding=ft.padding.only(left=20, right=20, top=20, bottom=16),
             gradient=ft.LinearGradient(
-                begin=ft.alignment.top_left, end=ft.alignment.bottom_right,
+                begin=ft.Alignment.TOP_LEFT, end=ft.Alignment.BOTTOM_RIGHT,
                 colors=["#667eea", "#764ba2"],
             ),
         )
@@ -94,18 +94,20 @@ class XinjingPage(ft.Column):
     def _tab_bar(self) -> ft.Container:
         """Tab 切换栏"""
         def on_tab(e):
-            self._current_tab = e.control.selected_index
+            try:
+                self._current_tab = int(e.data) if e.data else 0
+            except (ValueError, TypeError):
+                self._current_tab = 0
             self._refresh()
 
         return ft.Container(
-            content=ft.Tabs(
-                selected_index=self._current_tab,
-                on_change=on_tab,
+            content=ft.TabBar(
                 tabs=[
-                    ft.Tab(text="正面修炼"),
-                    ft.Tab(text="心魔"),
-                    ft.Tab(text="统计"),
+                    ft.Tab(label="正面修炼"),
+                    ft.Tab(label="心魔"),
+                    ft.Tab(label="统计"),
                 ],
+                on_click=on_tab,
                 indicator_color=C.PRIMARY,
                 label_color=C.PRIMARY,
                 unselected_label_color=C.TEXT_HINT,
@@ -178,7 +180,7 @@ class XinjingPage(ft.Column):
                     width=44, height=44,
                     border_radius=12,
                     bgcolor=ft.Colors.with_opacity(0.08, C.SUCCESS),
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 ),
                 ft.Column([
                     ft.Text(
@@ -242,7 +244,7 @@ class XinjingPage(ft.Column):
                     width=44, height=44,
                     border_radius=12,
                     bgcolor=ft.Colors.with_opacity(0.12, C.ERROR),
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 ),
                 ft.Column([
                     ft.Text(
@@ -278,7 +280,7 @@ class XinjingPage(ft.Column):
 
     # ─── 统计 Tab ───────────────────────────────────────────
     def _stats_tab(self) -> ft.Column:
-        """统计 Tab — BarChart 柱状图"""
+        """统计 Tab — 手动柱状图"""
         summary = self.svc.get_today_summary()
         stats_7d = self.svc.get_statistics(7)
         stats_30d = self.svc.get_statistics(30)
@@ -324,7 +326,7 @@ class XinjingPage(ft.Column):
         )
 
     def _stats_bar_chart(self, days: int) -> ft.Container:
-        """统计柱状图 — ft.BarChart"""
+        """统计柱状图 — 手动容器柱状图（替代 ft.BarChart）"""
         trend = self.svc.get_spirit_trend(days)
         if not trend:
             return ft.Container(
@@ -333,54 +335,45 @@ class XinjingPage(ft.Column):
             )
 
         max_val = max(max(abs(d["change"]), 1) for d in trend)
+        chart_height = 110
 
-        bar_groups = []
-        for i, d in enumerate(trend):
+        def _bar(value, color, width=18):
+            h = max(2, (abs(value) / max(max_val, 1)) * chart_height)
+            return ft.Container(
+                width=width,
+                height=h,
+                bgcolor=color,
+                border_radius=ft.border_radius.only(top_left=4, top_right=4),
+                tooltip=f"{value:+d}",
+            )
+
+        bar_columns = []
+        for d in trend:
             change = d["change"]
             color = C.SUCCESS if change >= 0 else C.ERROR
-            bar_groups.append(
-                ft.BarChartGroup(
-                    x=i,
-                    bar_rods=[
-                        ft.BarChartRod(
-                            from_y=0,
-                            to_y=abs(change) if change != 0 else 0.2,
-                            width=18,
-                            color=color,
-                            tooltip=f"{d['date']}: {change:+d}",
-                            border_radius=ft.border_radius.only(top_left=4, top_right=4),
-                        ),
+            bar_columns.append(
+                ft.Column(
+                    [
+                        _bar(change, color),
+                        ft.Text(d["date"], size=8, color=C.TEXT_HINT,
+                                text_align=ft.TextAlign.CENTER),
                     ],
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    alignment=ft.MainAxisAlignment.END,
+                    spacing=4,
                 )
             )
 
-        chart = ft.BarChart(
-            bar_groups=bar_groups,
-            max_y=max_val * 1.3 if max_val > 0 else 5,
-            min_y=0,
-            height=150,
-            expand=True,
-            interactive=True,
-            bgcolor=ft.Colors.TRANSPARENT,
+        chart = ft.Container(
+            content=ft.Row(
+                bar_columns,
+                alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                vertical_alignment=ft.CrossAxisAlignment.END,
+            ),
+            height=chart_height + 26,
             border=ft.border.only(
                 bottom=ft.BorderSide(1, ft.Colors.with_opacity(0.15, ft.Colors.BLACK)),
             ),
-            horizontal_grid_lines=ft.ChartGridLines(
-                interval=max(1, max_val // 3),
-                color=ft.Colors.with_opacity(0.08, ft.Colors.BLACK),
-                width=1,
-            ),
-            bottom_axis=ft.ChartAxis(
-                labels=[
-                    ft.ChartAxisLabel(
-                        value=i,
-                        label=ft.Text(d["date"], size=8, color=C.TEXT_HINT),
-                    )
-                    for i, d in enumerate(trend)
-                ],
-                labels_size=24,
-            ),
-            left_axis=ft.ChartAxis(labels_size=32),
         )
 
         legend = ft.Row([
@@ -559,7 +552,10 @@ class XinjingPage(ft.Column):
         """刷新页面"""
         self.controls.clear()
         self.build()
-        self.update()
+        try:
+            self.update()
+        except RuntimeError:
+            pass
 
 
 # 给 SpiritService 加个辅助方法引用

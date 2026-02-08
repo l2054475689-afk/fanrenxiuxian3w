@@ -79,7 +79,7 @@ class LingshiPage(ft.Column):
                                     content=ft.Text("↑", size=14, weight=ft.FontWeight.BOLD, color="#66bb6a"),
                                     width=24, height=24, border_radius=12,
                                     bgcolor=ft.Colors.with_opacity(0.2, "white"),
-                                    alignment=ft.alignment.center,
+                                    alignment=ft.Alignment.CENTER,
                                 ),
                                 ft.Text("收入", size=12, color="white70"),
                             ], spacing=6),
@@ -94,7 +94,7 @@ class LingshiPage(ft.Column):
                                     content=ft.Text("↓", size=14, weight=ft.FontWeight.BOLD, color="#ef5350"),
                                     width=24, height=24, border_radius=12,
                                     bgcolor=ft.Colors.with_opacity(0.2, "white"),
-                                    alignment=ft.alignment.center,
+                                    alignment=ft.Alignment.CENTER,
                                 ),
                                 ft.Text("支出", size=12, color="white70"),
                             ], spacing=6),
@@ -110,8 +110,8 @@ class LingshiPage(ft.Column):
             margin=ft.margin.symmetric(horizontal=16, vertical=8),
             border_radius=20,
             gradient=ft.LinearGradient(
-                begin=ft.alignment.top_left,
-                end=ft.alignment.bottom_right,
+                begin=ft.Alignment.TOP_LEFT,
+                end=ft.Alignment.BOTTOM_RIGHT,
                 colors=[self._GOLD_START, self._GOLD_END],
             ),
             shadow=ft.BoxShadow(
@@ -239,7 +239,7 @@ class LingshiPage(ft.Column):
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
                 padding=24,
                 margin=ft.margin.symmetric(horizontal=16),
-                alignment=ft.alignment.center,
+                alignment=ft.Alignment.CENTER,
             )
 
         items = []
@@ -254,7 +254,7 @@ class LingshiPage(ft.Column):
                                             color=C.SUCCESS if is_income else C.ERROR),
                             width=36, height=36, border_radius=18,
                             bgcolor=ft.Colors.with_opacity(0.1, C.SUCCESS if is_income else C.ERROR),
-                            alignment=ft.alignment.center,
+                            alignment=ft.Alignment.CENTER,
                         ),
                         ft.Column([
                             ft.Text(
@@ -301,7 +301,7 @@ class LingshiPage(ft.Column):
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=6),
                 padding=24,
                 margin=ft.margin.symmetric(horizontal=16),
-                alignment=ft.alignment.center,
+                alignment=ft.Alignment.CENTER,
             )
 
         items = []
@@ -366,7 +366,7 @@ class LingshiPage(ft.Column):
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
                 padding=24,
                 margin=ft.margin.symmetric(horizontal=16),
-                alignment=ft.alignment.center,
+                alignment=ft.Alignment.CENTER,
             )
 
         items = []
@@ -384,7 +384,7 @@ class LingshiPage(ft.Column):
                                 content=ft.Text("💳", size=18),
                                 width=40, height=40, border_radius=20,
                                 bgcolor=ft.Colors.with_opacity(0.1, C.ERROR),
-                                alignment=ft.alignment.center,
+                                alignment=ft.Alignment.CENTER,
                             ),
                             ft.Column([
                                 ft.Text(d["name"], size=15, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
@@ -527,4 +527,7 @@ class LingshiPage(ft.Column):
     def _refresh(self):
         self.controls.clear()
         self.build()
-        self.update()
+        try:
+            self.update()
+        except RuntimeError:
+            pass

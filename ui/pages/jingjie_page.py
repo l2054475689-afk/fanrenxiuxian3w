@@ -95,7 +95,7 @@ class JingjiePage(ft.Column):
                         width=56, height=56,
                         border_radius=28,
                         bgcolor=ft.Colors.with_opacity(0.2, "white"),
-                        alignment=ft.alignment.center,
+                        alignment=ft.Alignment.CENTER,
                     ),
                     ft.Column([
                         ft.Text(realm["name"], size=20, weight=ft.FontWeight.BOLD, color="white"),
@@ -123,8 +123,8 @@ class JingjiePage(ft.Column):
             margin=ft.margin.symmetric(horizontal=16, vertical=6),
             border_radius=16,
             gradient=ft.LinearGradient(
-                begin=ft.alignment.top_left,
-                end=ft.alignment.bottom_right,
+                begin=ft.Alignment.TOP_LEFT,
+                end=ft.Alignment.BOTTOM_RIGHT,
                 colors=[C.PRIMARY, C.PRIMARY_DARK],
             ),
             shadow=ft.BoxShadow(
@@ -147,7 +147,7 @@ class JingjiePage(ft.Column):
                         width=50, height=50,
                         border_radius=25,
                         bgcolor=ft.Colors.with_opacity(0.2, "white"),
-                        alignment=ft.alignment.center,
+                        alignment=ft.Alignment.CENTER,
                     ),
                     ft.Column([
                         ft.Text(realm["name"], size=18, weight=ft.FontWeight.BOLD, color="white"),
@@ -171,8 +171,8 @@ class JingjiePage(ft.Column):
             margin=ft.margin.symmetric(horizontal=16, vertical=6),
             border_radius=16,
             gradient=ft.LinearGradient(
-                begin=ft.alignment.top_left,
-                end=ft.alignment.bottom_right,
+                begin=ft.Alignment.TOP_LEFT,
+                end=ft.Alignment.BOTTOM_RIGHT,
                 colors=[self._DUNGEON_START, self._DUNGEON_END],
             ),
             shadow=ft.BoxShadow(
@@ -279,21 +279,24 @@ class JingjiePage(ft.Column):
                 ),
                 on_click=toggle_expand,
             ),
-            ft.Column([
-                ft.Text(
-                    skill["name"], size=15, weight=ft.FontWeight.W_600,
-                    color=C.TEXT_HINT if skill["is_completed"] else C.TEXT_PRIMARY,
-                ),
-                ft.Container(
-                    content=ft.ProgressBar(
-                        value=skill["progress"], height=4,
-                        color=C.SUCCESS if skill["is_completed"] else accent,
-                        bgcolor=ft.Colors.with_opacity(0.12, accent),
+            ft.GestureDetector(
+                content=ft.Column([
+                    ft.Text(
+                        skill["name"], size=15, weight=ft.FontWeight.W_600,
+                        color=C.TEXT_HINT if skill["is_completed"] else C.TEXT_PRIMARY,
                     ),
-                    border_radius=2,
-                    padding=ft.padding.only(top=4),
-                ),
-            ], spacing=0, expand=True, on_click=toggle_expand),
+                    ft.Container(
+                        content=ft.ProgressBar(
+                            value=skill["progress"], height=4,
+                            color=C.SUCCESS if skill["is_completed"] else accent,
+                            bgcolor=ft.Colors.with_opacity(0.12, accent),
+                        ),
+                        border_radius=2,
+                        padding=ft.padding.only(top=4),
+                    ),
+                ], spacing=0, expand=True),
+                on_tap=toggle_expand,
+            ),
             ft.Text(f"{completed}/{total}", size=12, color=C.TEXT_SECONDARY),
             ft.Icon(
                 ft.Icons.EXPAND_MORE if not is_expanded else ft.Icons.EXPAND_LESS,
@@ -401,8 +404,8 @@ class JingjiePage(ft.Column):
                 padding=ft.padding.symmetric(horizontal=32, vertical=14),
                 border_radius=28,
                 gradient=ft.LinearGradient(
-                    begin=ft.alignment.center_left,
-                    end=ft.alignment.center_right,
+                    begin=ft.Alignment.CENTER_LEFT,
+                    end=ft.Alignment.CENTER_RIGHT,
                     colors=[self._GOLD_START, self._GOLD_END],
                 ),
                 shadow=ft.BoxShadow(
@@ -412,7 +415,7 @@ class JingjiePage(ft.Column):
                 ),
                 on_click=on_advance,
             ),
-            alignment=ft.alignment.center,
+            alignment=ft.Alignment.CENTER,
             padding=ft.padding.symmetric(vertical=16),
         )
 
@@ -425,7 +428,7 @@ class JingjiePage(ft.Column):
                     width=40, height=40,
                     border_radius=20,
                     bgcolor=ft.Colors.with_opacity(0.1, C.SUCCESS),
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 ),
                 ft.Column([
                     ft.Text(realm["name"], size=15, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
@@ -530,4 +533,7 @@ class JingjiePage(ft.Column):
     def _refresh(self):
         self.controls.clear()
         self.build()
-        self.update()
+        try:
+            self.update()
+        except RuntimeError:
+            pass

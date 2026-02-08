@@ -1,6 +1,6 @@
 """
 个人面板页面 — 生命仪表盘 v2
-美化版：深红渐变血量卡、心境+灵石双渐变卡、圆形境界进度、BarChart 趋势图
+美化版：深红渐变血量卡、心境+灵石双渐变卡、圆形境界进度、手动柱状图趋势
 """
 import math
 import flet as ft
@@ -316,9 +316,9 @@ class PanelPage(ft.Column):
             ft.Text(label, size=11, color=C.TEXT_HINT),
         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=3)
 
-    # ─── 7日趋势 — BarChart ─────────────────────────────────
+    # ─── 7日趋势 — 手动柱状图 ─────────────────────────────────
     def _trend_chart(self) -> ft.Container:
-        """7日趋势图 — ft.BarChart"""
+        """7日趋势图 — 手动容器柱状图（替代 ft.BarChart）"""
         trend = self.svc.get_weekly_trend()
         if not trend:
             return ft.Container(
@@ -329,60 +329,47 @@ class PanelPage(ft.Column):
             )
 
         max_val = max(max(abs(d["positive"]), abs(d["demon"]), 1) for d in trend)
+        chart_height = 120
 
-        bar_groups = []
-        for i, d in enumerate(trend):
-            bar_groups.append(
-                ft.BarChartGroup(
-                    x=i,
-                    bar_rods=[
-                        ft.BarChartRod(
-                            from_y=0,
-                            to_y=d["positive"],
-                            width=14,
-                            color=C.SUCCESS,
-                            tooltip=f"正面 +{d['positive']}",
-                            border_radius=ft.border_radius.only(top_left=4, top_right=4),
+        def _bar(value, color, width=14):
+            h = max(2, (abs(value) / max(max_val, 1)) * chart_height)
+            return ft.Container(
+                width=width,
+                height=h,
+                bgcolor=color,
+                border_radius=ft.border_radius.only(top_left=4, top_right=4),
+                tooltip=str(value),
+            )
+
+        bar_columns = []
+        for d in trend:
+            bar_columns.append(
+                ft.Column(
+                    [
+                        ft.Row(
+                            [_bar(d["positive"], C.SUCCESS), _bar(d["demon"], C.ERROR)],
+                            spacing=2,
+                            alignment=ft.MainAxisAlignment.CENTER,
                         ),
-                        ft.BarChartRod(
-                            from_y=0,
-                            to_y=d["demon"],
-                            width=14,
-                            color=C.ERROR,
-                            tooltip=f"心魔 -{d['demon']}",
-                            border_radius=ft.border_radius.only(top_left=4, top_right=4),
-                        ),
+                        ft.Text(d["date"], size=9, color=C.TEXT_HINT,
+                                text_align=ft.TextAlign.CENTER),
                     ],
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    alignment=ft.MainAxisAlignment.END,
+                    spacing=4,
                 )
             )
 
-        chart = ft.BarChart(
-            bar_groups=bar_groups,
-            max_y=max_val * 1.2 if max_val > 0 else 5,
-            min_y=0,
-            height=160,
-            expand=True,
-            interactive=True,
-            bgcolor=ft.Colors.TRANSPARENT,
+        chart = ft.Container(
+            content=ft.Row(
+                bar_columns,
+                alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                vertical_alignment=ft.CrossAxisAlignment.END,
+            ),
+            height=chart_height + 30,
             border=ft.border.only(
                 bottom=ft.BorderSide(1, ft.Colors.with_opacity(0.15, ft.Colors.BLACK)),
             ),
-            horizontal_grid_lines=ft.ChartGridLines(
-                interval=max(1, max_val // 3),
-                color=ft.Colors.with_opacity(0.08, ft.Colors.BLACK),
-                width=1,
-            ),
-            bottom_axis=ft.ChartAxis(
-                labels=[
-                    ft.ChartAxisLabel(
-                        value=i,
-                        label=ft.Text(d["date"], size=9, color=C.TEXT_HINT),
-                    )
-                    for i, d in enumerate(trend)
-                ],
-                labels_size=28,
-            ),
-            left_axis=ft.ChartAxis(labels_size=32),
         )
 
         # 图例

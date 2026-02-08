@@ -115,22 +115,22 @@ def shadow_glow(color="#667eea", opacity=0.3, blur=20):
 # ============ 动画预设 ============
 def anim_default(duration_ms=200):
     """默认动画"""
-    return ft.animation.Animation(duration_ms, ft.AnimationCurve.EASE_IN_OUT)
+    return ft.Animation(duration_ms, ft.AnimationCurve.EASE_IN_OUT)
 
 
 def anim_spring(duration_ms=400):
     """弹性动画"""
-    return ft.animation.Animation(duration_ms, ft.AnimationCurve.EASE_OUT_BACK)
+    return ft.Animation(duration_ms, ft.AnimationCurve.EASE_OUT_BACK)
 
 
 def anim_smooth(duration_ms=300):
     """平滑动画"""
-    return ft.animation.Animation(duration_ms, ft.AnimationCurve.EASE_OUT)
+    return ft.Animation(duration_ms, ft.AnimationCurve.EASE_OUT)
 
 
 def anim_fade(duration_ms=500):
     """淡入淡出"""
-    return ft.animation.Animation(duration_ms, ft.AnimationCurve.EASE_IN_OUT)
+    return ft.Animation(duration_ms, ft.AnimationCurve.EASE_IN_OUT)
 
 
 # ============ 主题 ============

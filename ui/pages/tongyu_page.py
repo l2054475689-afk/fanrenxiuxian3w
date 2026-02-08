@@ -86,7 +86,7 @@ class TongyuPage(ft.Column):
                                 content=ft.Text(b["avatar_emoji"], size=24),
                                 width=44, height=44, border_radius=22,
                                 bgcolor=ft.Colors.with_opacity(0.1, "#e91e63"),
-                                alignment=ft.alignment.center,
+                                alignment=ft.Alignment.CENTER,
                             ),
                             ft.Column([
                                 ft.Text(b["name"], size=14, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
@@ -167,7 +167,7 @@ class TongyuPage(ft.Column):
                             content=ft.Text(detail["avatar_emoji"], size=48),
                             width=80, height=80, border_radius=40,
                             bgcolor=ft.Colors.with_opacity(0.1, rel_color),
-                            alignment=ft.alignment.center,
+                            alignment=ft.Alignment.CENTER,
                         ),
                         ft.Text(detail["name"], size=22, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
                         ft.Container(
@@ -256,7 +256,7 @@ class TongyuPage(ft.Column):
                         offset=ft.Offset(0, 2),
                     ),
                 ),
-                alignment=ft.alignment.center,
+                alignment=ft.Alignment.CENTER,
                 padding=16,
             )
         )
@@ -294,7 +294,7 @@ class TongyuPage(ft.Column):
                     content=ft.Text(person["avatar_emoji"], size=28),
                     width=50, height=50, border_radius=25,
                     bgcolor=ft.Colors.with_opacity(0.1, rel_color),
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 ),
                 ft.Column([
                     ft.Text(person["name"], size=16, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
@@ -517,4 +517,7 @@ class TongyuPage(ft.Column):
     def _refresh(self):
         self.controls.clear()
         self.build()
-        self.update()
+        try:
+            self.update()
+        except RuntimeError:
+            pass

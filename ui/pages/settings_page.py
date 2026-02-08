@@ -175,7 +175,7 @@ class SettingsPage(ft.Column):
                     content=ft.Icon(icon, color=icon_color, size=20),
                     width=36, height=36, border_radius=10,
                     bgcolor=icon_bg,
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 ),
                 ft.Column([
                     ft.Text(title, size=15, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
@@ -196,7 +196,7 @@ class SettingsPage(ft.Column):
                     content=ft.Icon(icon, color=icon_color, size=20),
                     width=36, height=36, border_radius=10,
                     bgcolor=icon_bg,
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 ),
                 ft.Column([
                     ft.Text(title, size=15, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
@@ -214,7 +214,7 @@ class SettingsPage(ft.Column):
                     content=ft.Icon(icon, color=C.ERROR, size=20),
                     width=36, height=36, border_radius=10,
                     bgcolor="#ffebee",
-                    alignment=ft.alignment.center,
+                    alignment=ft.Alignment.CENTER,
                 ),
                 ft.Column([
                     ft.Text(title, size=15, weight=ft.FontWeight.W_500, color=C.ERROR),

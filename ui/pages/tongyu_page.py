@@ -160,6 +160,11 @@ class TongyuPage(ft.Column):
                             on_click=lambda e: self._go_back(),
                         ),
                         ft.Container(expand=True),
+                        ft.IconButton(
+                            icon=ft.Icons.DELETE_OUTLINE, icon_size=20,
+                            icon_color=C.ERROR,
+                            on_click=lambda e: self._confirm_delete_person(detail),
+                        ),
                     ]),
                     # 大头像 + 名字
                     ft.Column([
@@ -410,7 +415,15 @@ class TongyuPage(ft.Column):
                 # 内容
                 ft.Container(
                     content=ft.Column([
-                        ft.Text(f"📅 {event['event_date']}", size=12, color=C.TEXT_HINT),
+                        ft.Row([
+                            ft.Text(f"📅 {event['event_date']}", size=12, color=C.TEXT_HINT, expand=True),
+                            ft.IconButton(
+                                icon=ft.Icons.CLOSE, icon_size=14,
+                                icon_color=C.TEXT_HINT,
+                                on_click=lambda e, eid=event["id"]: self._confirm_delete_event(eid),
+                                style=ft.ButtonStyle(padding=0),
+                            ),
+                        ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
                         ft.Text(event["event_description"], size=14, color=C.TEXT_PRIMARY),
                         ft.Row(tag_chips, spacing=4) if tag_chips else ft.Container(),
                         ft.Text(
@@ -519,6 +532,51 @@ class TongyuPage(ft.Column):
             actions=[
                 ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
+            ],
+        )
+        self._page.show_dialog(dlg)
+
+    def _confirm_delete_person(self, detail: dict):
+        def on_confirm(e):
+            result = self.svc.delete_person(detail["id"])
+            dlg.open = False
+            self._page.update()
+            color = C.WARNING if result["success"] else C.ERROR
+            _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=color)
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
+            self._selected_person_id = None
+            self._refresh()
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("确认删除"),
+            content=ft.Text(f"确定要删除人物「{detail['name']}」吗？"),
+            actions=[
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.TextButton("删除", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
+            ],
+        )
+        self._page.show_dialog(dlg)
+
+    def _confirm_delete_event(self, event_id: int):
+        def on_confirm(e):
+            result = self.svc.delete_event(event_id)
+            dlg.open = False
+            self._page.update()
+            color = C.WARNING if result["success"] else C.ERROR
+            _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=color)
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
+            self._refresh()
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("确认删除"),
+            content=ft.Text("确定要删除这条互动记录吗？"),
+            actions=[
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.TextButton("删除", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
             ],
         )
         self._page.show_dialog(dlg)

@@ -268,6 +268,12 @@ class LingshiPage(ft.Column):
                             size=16, weight=ft.FontWeight.BOLD,
                             color=C.SUCCESS if is_income else C.ERROR,
                         ),
+                        ft.IconButton(
+                            icon=ft.Icons.DELETE_OUTLINE, icon_size=18,
+                            icon_color=C.TEXT_HINT,
+                            on_click=lambda e, tid=t["id"], tdesc=t.get("description") or t["category"]: self._confirm_delete_transaction(tid, tdesc),
+                            style=ft.ButtonStyle(padding=0),
+                        ),
                     ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
                     padding=ft.Padding.symmetric(horizontal=16, vertical=10),
                     margin=ft.Margin.symmetric(horizontal=16, vertical=2),
@@ -326,6 +332,12 @@ class LingshiPage(ft.Column):
                         padding=ft.Padding.symmetric(horizontal=8, vertical=2),
                         border_radius=8,
                         bgcolor=color,
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.CLOSE, icon_size=14,
+                        icon_color=C.TEXT_HINT,
+                        on_click=lambda e, cname=cat["category"]: self._confirm_delete_budget(cname),
+                        style=ft.ButtonStyle(padding=0),
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                 ft.Container(
@@ -394,6 +406,12 @@ class LingshiPage(ft.Column):
                                 ft.Text(f"¥{remaining:,.0f}", size=16, weight=ft.FontWeight.BOLD, color=C.ERROR),
                                 ft.Text("剩余", size=10, color=C.TEXT_HINT),
                             ], horizontal_alignment=ft.CrossAxisAlignment.END, spacing=2),
+                            ft.IconButton(
+                                icon=ft.Icons.DELETE_OUTLINE, icon_size=18,
+                                icon_color=C.TEXT_HINT,
+                                on_click=lambda e, did=d["id"], dname=d["name"]: self._confirm_delete_debt(did, dname),
+                                style=ft.ButtonStyle(padding=0),
+                            ),
                         ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
                         ft.Container(height=4),
                         ft.Row([
@@ -525,6 +543,72 @@ class LingshiPage(ft.Column):
             actions=[
                 ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
+            ],
+        )
+        self._page.show_dialog(dlg)
+
+    def _confirm_delete_budget(self, category: str):
+        def on_confirm(e):
+            result = self.svc.delete_budget(category)
+            dlg.open = False
+            self._page.update()
+            color = C.WARNING if result["success"] else C.ERROR
+            _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=color)
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
+            self._refresh()
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("确认删除"),
+            content=ft.Text(f"确定要删除「{category}」的预算吗？"),
+            actions=[
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.TextButton("删除", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
+            ],
+        )
+        self._page.show_dialog(dlg)
+
+    def _confirm_delete_debt(self, debt_id: int, debt_name: str):
+        def on_confirm(e):
+            result = self.svc.delete_debt(debt_id)
+            dlg.open = False
+            self._page.update()
+            color = C.WARNING if result["success"] else C.ERROR
+            _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=color)
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
+            self._refresh()
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("确认删除"),
+            content=ft.Text(f"确定要删除负债「{debt_name}」吗？"),
+            actions=[
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.TextButton("删除", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
+            ],
+        )
+        self._page.show_dialog(dlg)
+
+    def _confirm_delete_transaction(self, txn_id: int, description: str):
+        def on_confirm(e):
+            result = self.svc.delete_transaction(txn_id)
+            dlg.open = False
+            self._page.update()
+            color = C.WARNING if result["success"] else C.ERROR
+            _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=color)
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
+            self._refresh()
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("确认删除"),
+            content=ft.Text(f"确定要删除记录「{description}」吗？"),
+            actions=[
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.TextButton("删除", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
             ],
         )
         self._page.show_dialog(dlg)

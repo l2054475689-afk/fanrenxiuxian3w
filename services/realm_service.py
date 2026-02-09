@@ -118,6 +118,22 @@ class RealmService:
             s.delete(sub)
         return {"success": True, "message": "已删除"}
 
+    def delete_realm(self, realm_id: int) -> dict:
+        """删除境界（含所有技能和子任务）"""
+        with self.db.session_scope() as s:
+            from database.models import Realm, Skill, SubTask
+            realm = s.query(Realm).filter(Realm.id == realm_id).first()
+            if not realm:
+                return {"success": False, "message": "境界不存在"}
+            name = realm.name
+            # 删除所有子任务和技能
+            skills = s.query(Skill).filter(Skill.realm_id == realm_id).all()
+            for sk in skills:
+                s.query(SubTask).filter(SubTask.skill_id == sk.id).delete()
+                s.delete(sk)
+            s.delete(realm)
+        return {"success": True, "message": f"已删除境界「{name}」"}
+
     # === 境界晋升 ===
 
     def advance_realm(self, realm_id: int) -> dict:

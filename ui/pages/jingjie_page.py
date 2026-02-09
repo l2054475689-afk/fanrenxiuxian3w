@@ -157,6 +157,12 @@ class JingjiePage(ft.Column):
                         ),
                     ], spacing=2, expand=True),
                     ft.Text(f"{pct:.0f}%", size=20, weight=ft.FontWeight.BOLD, color="white"),
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE_OUTLINE, icon_size=20,
+                        icon_color=ft.Colors.with_opacity(0.7, "white"),
+                        on_click=lambda e, rid=realm["id"], rname=realm["name"]: self._confirm_delete_realm(rid, rname),
+                        style=ft.ButtonStyle(padding=0),
+                    ),
                 ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
                 ft.Container(
                     content=ft.ProgressBar(
@@ -545,6 +551,28 @@ class JingjiePage(ft.Column):
     def _delete_sub_task(self, sub_task_id: int):
         self.svc.delete_sub_task(sub_task_id)
         self._refresh()
+
+    def _confirm_delete_realm(self, realm_id: int, realm_name: str):
+        def on_confirm(e):
+            result = self.svc.delete_realm(realm_id)
+            dlg.open = False
+            self._page.update()
+            color = C.WARNING if result["success"] else C.ERROR
+            _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=color)
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
+            self._refresh()
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("确认删除"),
+            content=ft.Text(f"确定要删除副本「{realm_name}」及其所有技能和子任务吗？此操作不可恢复。"),
+            actions=[
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.TextButton("删除", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
+            ],
+        )
+        self._page.show_dialog(dlg)
 
     def _refresh(self):
         self.controls.clear()

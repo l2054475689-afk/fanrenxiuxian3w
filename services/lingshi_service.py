@@ -161,6 +161,29 @@ class LingshiService:
         """获取负债列表"""
         return self.db.get_debts()
 
+    def delete_debt(self, debt_id: int) -> dict:
+        """删除负债"""
+        with self.db.session_scope() as s:
+            from database.models import Debt
+            debt = s.query(Debt).filter(Debt.id == debt_id).first()
+            if not debt:
+                return {"success": False, "message": "负债不存在"}
+            name = debt.name
+            s.delete(debt)
+        return {"success": True, "message": f"已删除负债「{name}」"}
+
+    def delete_budget(self, category: str, month: str = None) -> dict:
+        """删除预算"""
+        if not month:
+            month = date.today().strftime("%Y-%m")
+        with self.db.session_scope() as s:
+            from database.models import Budget
+            budget = s.query(Budget).filter(Budget.category == category, Budget.month == month).first()
+            if not budget:
+                return {"success": False, "message": "预算不存在"}
+            s.delete(budget)
+        return {"success": True, "message": f"已删除{category}预算"}
+
     def get_debt_summary(self) -> dict:
         """获取负债汇总"""
         debts = self.db.get_debts()

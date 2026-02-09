@@ -24,7 +24,6 @@ from ui.styles import (
 )
 
 from ui.pages.panel_page import PanelPage
-from ui.pages.kline_page import KlinePage
 from ui.pages.xinjing_page import XinjingPage
 from ui.pages.jingjie_page import JingjiePage
 from ui.pages.lingshi_page import LingshiPage
@@ -217,16 +216,14 @@ def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc
             if index == 0:
                 pages[index] = PanelPage(page, panel_svc)
             elif index == 1:
-                pages[index] = KlinePage(page, kline_svc)
+                pages[index] = XinjingPage(page, spirit_svc, daily_task_svc, kline_svc)
             elif index == 2:
-                pages[index] = XinjingPage(page, spirit_svc, daily_task_svc)
-            elif index == 3:
                 pages[index] = JingjiePage(page, realm_svc)
-            elif index == 4:
+            elif index == 3:
                 pages[index] = LingshiPage(page, lingshi_svc)
-            elif index == 5:
+            elif index == 4:
                 pages[index] = TongyuPage(page, tongyu_svc)
-            elif index == 6:
+            elif index == 5:
                 pages[index] = SettingsPage(page, db)
         return pages[index]
 
@@ -244,7 +241,6 @@ def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc
         on_change=on_nav_change,
         destinations=[
             ft.NavigationBarDestination(icon=ft.Icons.HOME_OUTLINED, selected_icon=ft.Icons.HOME, label="面板"),
-            ft.NavigationBarDestination(icon=ft.Icons.SHOW_CHART, selected_icon=ft.Icons.SHOW_CHART, label="K线"),
             ft.NavigationBarDestination(icon=ft.Icons.SELF_IMPROVEMENT_OUTLINED, selected_icon=ft.Icons.SELF_IMPROVEMENT, label="心境"),
             ft.NavigationBarDestination(icon=ft.Icons.SCHOOL_OUTLINED, selected_icon=ft.Icons.SCHOOL, label="境界"),
             ft.NavigationBarDestination(icon=ft.Icons.ATTACH_MONEY_OUTLINED, selected_icon=ft.Icons.ATTACH_MONEY, label="灵石"),

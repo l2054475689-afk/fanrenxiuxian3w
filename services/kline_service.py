@@ -1,8 +1,7 @@
 """
 K线人生图 Service 层
-职责：每日心情评分的业务逻辑，K线数据管理
+职责：自动从心境系统生成K线数据（开盘/收盘/最高/最低）
 """
-import json
 from datetime import date, timedelta
 from typing import Optional
 
@@ -15,62 +14,53 @@ class KlineService:
     def __init__(self, db: DatabaseManager):
         self.db = db
 
-    def record_morning(self, score_date: date, score: int) -> dict:
-        """记录早上评分（开盘价）"""
-        score = max(0, min(100, score))
-        existing = self.db.get_daily_score(score_date)
-        if existing and existing["morning_score"] is not None:
-            # 更新
-            return self.db.upsert_daily_score(
-                score_date,
-                morning_score=score,
-                high_score=max(score, existing["high_score"] or score),
-                low_score=min(score, existing["low_score"] or score),
+    def on_spirit_change(self, old_spirit: int, new_spirit: int) -> None:
+        """心境值变动时调用，自动更新今日K线数据
+
+        Args:
+            old_spirit: 变动前的心境值
+            new_spirit: 变动后的心境值
+        """
+        today = date.today()
+        existing = self.db.get_daily_score(today)
+
+        if not existing:
+            # 今天第一次变动：open=变动前的值, close=变动后的值
+            self.db.upsert_daily_score(
+                today,
+                open_spirit=old_spirit,
+                close_spirit=new_spirit,
+                high_spirit=max(old_spirit, new_spirit),
+                low_spirit=min(old_spirit, new_spirit),
+                change_count=1,
             )
-        # 新建或首次设置 morning
-        return self.db.upsert_daily_score(
-            score_date,
-            morning_score=score,
-            high_score=max(score, (existing or {}).get("high_score") or score),
-            low_score=min(score, (existing or {}).get("low_score") or score),
-        )
-
-    def record_evening(self, score_date: date, score: int) -> dict:
-        """记录晚上评分（收盘价），自动设 high/low"""
-        score = max(0, min(100, score))
-        existing = self.db.get_daily_score(score_date)
-        morning = (existing or {}).get("morning_score")
-        if morning is not None:
-            high = max(morning, score, (existing or {}).get("high_score") or 0)
-            low = min(morning, score, (existing or {}).get("low_score") or 100)
         else:
-            high = max(score, (existing or {}).get("high_score") or score)
-            low = min(score, (existing or {}).get("low_score") or score)
-        return self.db.upsert_daily_score(
-            score_date,
-            evening_score=score,
-            high_score=high,
-            low_score=low,
-        )
+            # 已有记录：更新 close, high, low, change_count
+            self.db.upsert_daily_score(
+                today,
+                close_spirit=new_spirit,
+                high_spirit=max(existing["high_spirit"], new_spirit),
+                low_spirit=min(existing["low_spirit"], new_spirit),
+                change_count=existing["change_count"] + 1,
+            )
 
-    def update_score(self, score_date: date, morning: int = None, evening: int = None,
-                     high: int = None, low: int = None,
-                     notes: str = None, tags: str = None) -> dict:
-        """手动修改评分"""
-        kwargs = {}
-        if morning is not None:
-            kwargs["morning_score"] = max(0, min(100, morning))
-        if evening is not None:
-            kwargs["evening_score"] = max(0, min(100, evening))
-        if high is not None:
-            kwargs["high_score"] = max(0, min(100, high))
-        if low is not None:
-            kwargs["low_score"] = max(0, min(100, low))
-        if notes is not None:
-            kwargs["notes"] = notes
-        if tags is not None:
-            kwargs["tags"] = tags
-        return self.db.upsert_daily_score(score_date, **kwargs)
+    def init_today(self, current_spirit: int) -> None:
+        """初始化今天的开盘价（如果还没有记录）
+
+        Args:
+            current_spirit: 当前心境值
+        """
+        today = date.today()
+        existing = self.db.get_daily_score(today)
+        if not existing:
+            self.db.upsert_daily_score(
+                today,
+                open_spirit=current_spirit,
+                close_spirit=current_spirit,
+                high_spirit=current_spirit,
+                low_spirit=current_spirit,
+                change_count=0,
+            )
 
     def get_today_score(self) -> Optional[dict]:
         """获取今天的评分"""
@@ -88,7 +78,7 @@ class KlineService:
         # 构建日期->收盘价映射
         score_map = {}
         for s in scores:
-            close = s.get("evening_score") or s.get("morning_score")
+            close = s.get("close_spirit")
             if close is not None:
                 score_map[s["score_date"]] = close
 

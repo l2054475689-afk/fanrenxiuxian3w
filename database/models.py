@@ -331,17 +331,17 @@ class DailyTask(Base):
 # ============ K线人生图 ============
 
 class DailyScore(Base):
-    """每日评分 — K线人生图数据源"""
+    """每日评分 — K线人生图数据源（自动从心境系统生成）"""
     __tablename__ = "daily_scores"
 
     id = Column(Integer, primary_key=True)
     score_date = Column(Date, nullable=False, unique=True)  # 日期，每天一条
-    morning_score = Column(Integer, nullable=True)   # 早上心情 0-100（开盘价）
-    evening_score = Column(Integer, nullable=True)   # 晚上心情 0-100（收盘价）
-    high_score = Column(Integer, nullable=True)      # 当天最高 0-100（最高价）
-    low_score = Column(Integer, nullable=True)       # 当天最低 0-100（最低价）
-    notes = Column(Text, nullable=True)              # 当天备注/日记
-    tags = Column(Text, nullable=True)               # 标签 JSON: ["工作","运动","社交"]
+    open_spirit = Column(Integer, nullable=False)    # 当天第一次变动前的心境值（开盘）
+    close_spirit = Column(Integer, nullable=False)   # 当天最后一次变动后的心境值（收盘）
+    high_spirit = Column(Integer, nullable=False)    # 当天最高心境值
+    low_spirit = Column(Integer, nullable=False)     # 当天最低心境值
+    change_count = Column(Integer, default=0)        # 当天变动次数
+    notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 

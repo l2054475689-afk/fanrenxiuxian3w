@@ -615,12 +615,12 @@ class DatabaseManager:
         return {
             "id": score.id,
             "score_date": score.score_date,
-            "morning_score": score.morning_score,
-            "evening_score": score.evening_score,
-            "high_score": score.high_score,
-            "low_score": score.low_score,
+            "open_spirit": score.open_spirit,
+            "close_spirit": score.close_spirit,
+            "high_spirit": score.high_spirit,
+            "low_spirit": score.low_spirit,
+            "change_count": score.change_count,
             "notes": score.notes,
-            "tags": score.tags,
             "created_at": score.created_at,
             "updated_at": score.updated_at,
         }

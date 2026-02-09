@@ -17,6 +17,12 @@ class SpiritService:
 
     def __init__(self, db: DatabaseManager):
         self.db = db
+        self.kline_svc = None  # 由 main.py 注入 KlineService 引用
+
+    def _notify_kline(self, old_spirit: int, new_spirit: int):
+        """通知K线服务心境值变动"""
+        if self.kline_svc and old_spirit != new_spirit:
+            self.kline_svc.on_spirit_change(old_spirit, new_spirit)
 
     # === 任务管理 ===
 
@@ -73,10 +79,18 @@ class SpiritService:
         if self.db.is_task_completed_today(task_id):
             return {"success": False, "message": "今日已完成该任务"}
 
+        # 记录变动前的心境值
+        config = self.db.get_user_config()
+        old_spirit = config["current_spirit"] if config else 0
+
         record = self.db.add_task_record(
             task_id=task_id, task_name=task["name"],
             spirit_change=task["spirit_effect"], blood_change=task["blood_effect"],
         )
+
+        # 通知K线服务
+        self._notify_kline(old_spirit, record["new_spirit"])
+
         # 更新连续打卡
         streak = None
         if task["enable_streak"]:
@@ -95,10 +109,18 @@ class SpiritService:
         if not task:
             return {"success": False, "message": "任务不存在"}
 
+        # 记录变动前的心境值
+        config = self.db.get_user_config()
+        old_spirit = config["current_spirit"] if config else 0
+
         record = self.db.add_task_record(
             task_id=task_id, task_name=task["name"],
             spirit_change=task["spirit_effect"], blood_change=task["blood_effect"],
         )
+
+        # 通知K线服务
+        self._notify_kline(old_spirit, record["new_spirit"])
+
         return {
             "success": True,
             "record": record,
@@ -113,10 +135,18 @@ class SpiritService:
         if task["task_type"] != "demon":
             return {"success": False, "message": "非心魔任务"}
 
+        # 记录变动前的心境值
+        config = self.db.get_user_config()
+        old_spirit = config["current_spirit"] if config else 0
+
         record = self.db.add_task_record(
             task_id=task_id, task_name=task["name"],
             spirit_change=task["spirit_effect"], blood_change=task["blood_effect"],
         )
+
+        # 通知K线服务
+        self._notify_kline(old_spirit, record["new_spirit"])
+
         return {
             "success": True,
             "record": record,

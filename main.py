@@ -55,6 +55,9 @@ def main(page: ft.Page):
     daily_task_svc = DailyTaskService(db)
     kline_svc = KlineService(db)
 
+    # 注入K线服务引用到心境服务
+    spirit_svc.kline_svc = kline_svc
+
     # 检查是否首次启动
     config = db.get_user_config()
     if not config:

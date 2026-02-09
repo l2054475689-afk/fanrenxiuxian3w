@@ -91,27 +91,27 @@ class XinjingPage(ft.Column):
         )
 
     # ─── Tab 栏 ─────────────────────────────────────────────
+    def _on_tab_click(self, idx):
+        self._current_tab = idx
+        self._refresh()
+
     def _tab_bar(self) -> ft.Container:
         """Tab 切换栏"""
-        def on_tab(e):
-            try:
-                self._current_tab = int(e.data) if e.data else 0
-            except (ValueError, TypeError):
-                self._current_tab = 0
-            self._refresh()
 
+        tab_labels = ["正面修炼", "心魔", "统计"]
+        tabs = []
+        for i, label in enumerate(tab_labels):
+            is_sel = (i == self._current_tab)
+            tabs.append(ft.Container(
+                content=ft.Text(label, size=14, weight=ft.FontWeight.BOLD if is_sel else ft.FontWeight.NORMAL,
+                                color=C.PRIMARY if is_sel else C.TEXT_HINT),
+                padding=ft.Padding.symmetric(horizontal=16, vertical=10),
+                border=ft.Border(bottom=ft.BorderSide(2, C.PRIMARY) if is_sel else ft.BorderSide(0, "transparent")),
+                on_click=lambda e, idx=i: self._on_tab_click(idx),
+                ink=True,
+            ))
         return ft.Container(
-            content=ft.TabBar(
-                tabs=[
-                    ft.Tab(label="正面修炼"),
-                    ft.Tab(label="心魔"),
-                    ft.Tab(label="统计"),
-                ],
-                on_click=on_tab,
-                indicator_color=C.PRIMARY,
-                label_color=C.PRIMARY,
-                unselected_label_color=C.TEXT_HINT,
-            ),
+            content=ft.Row(tabs, alignment=ft.MainAxisAlignment.CENTER, spacing=0),
         )
 
     def _build_content(self) -> ft.Container:

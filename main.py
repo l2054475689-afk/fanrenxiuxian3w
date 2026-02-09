@@ -82,7 +82,10 @@ def _show_onboarding(page: ft.Page, db: DatabaseManager, on_complete):
                 on_complete()
                 page.update()
         except (ValueError, TypeError):
-            page.open(ft.SnackBar(ft.Text("请输入有效的年份"), bgcolor=C.ERROR))
+            _sb = ft.SnackBar(ft.Text("请输入有效的年份"), bgcolor=C.ERROR)
+            _sb.open = True
+            page.overlay.append(_sb)
+            page.update()
 
     # 装饰性背景元素
     bg_decorations = [

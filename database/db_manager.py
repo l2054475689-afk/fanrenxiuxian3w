@@ -14,6 +14,7 @@ from database.models import (
     Realm, Skill, SubTask,
     Transaction, RecurringTransaction, Debt, DebtRepayment, Budget, Milestone,
     Person, PersonalityTag, RelationshipEvent,
+    DailyScore,
     AIConfig, create_all_tables
 )
 
@@ -566,6 +567,63 @@ class DatabaseManager:
             s.add(config)
             s.flush()
             return {"id": config.id, "provider": config.provider, "is_active": True}
+
+    # ============ K线人生图 ============
+
+    def get_daily_score(self, score_date: date) -> Optional[dict]:
+        """获取某天的评分"""
+        with self.session_scope() as s:
+            score = s.query(DailyScore).filter(DailyScore.score_date == score_date).first()
+            if not score:
+                return None
+            return self._daily_score_to_dict(score)
+
+    def get_daily_scores(self, start_date: date, end_date: date) -> list[dict]:
+        """获取日期范围内的评分"""
+        with self.session_scope() as s:
+            scores = s.query(DailyScore).filter(
+                DailyScore.score_date >= start_date,
+                DailyScore.score_date <= end_date,
+            ).order_by(DailyScore.score_date).all()
+            return [self._daily_score_to_dict(sc) for sc in scores]
+
+    def upsert_daily_score(self, score_date: date, **kwargs) -> dict:
+        """创建或更新每日评分"""
+        with self.session_scope() as s:
+            score = s.query(DailyScore).filter(DailyScore.score_date == score_date).first()
+            if not score:
+                score = DailyScore(score_date=score_date)
+                s.add(score)
+            for key, val in kwargs.items():
+                if hasattr(score, key) and val is not None:
+                    setattr(score, key, val)
+            score.updated_at = datetime.now()
+            s.flush()
+            return self._daily_score_to_dict(score)
+
+    def delete_daily_score(self, score_id: int) -> bool:
+        """删除每日评分"""
+        with self.session_scope() as s:
+            score = s.query(DailyScore).filter(DailyScore.id == score_id).first()
+            if not score:
+                return False
+            s.delete(score)
+            return True
+
+    @staticmethod
+    def _daily_score_to_dict(score: DailyScore) -> dict:
+        return {
+            "id": score.id,
+            "score_date": score.score_date,
+            "morning_score": score.morning_score,
+            "evening_score": score.evening_score,
+            "high_score": score.high_score,
+            "low_score": score.low_score,
+            "notes": score.notes,
+            "tags": score.tags,
+            "created_at": score.created_at,
+            "updated_at": score.updated_at,
+        }
 
     # ============ 序列化辅助 ============
 

@@ -11,6 +11,7 @@ from services.lingshi_service import LingshiService
 from services.tongyu_service import TongyuService
 from services.panel_service import PanelService
 from services.daily_task_service import DailyTaskService
+from services.kline_service import KlineService
 from services.constants import Colors as C
 
 from ui.styles import (
@@ -23,6 +24,7 @@ from ui.styles import (
 )
 
 from ui.pages.panel_page import PanelPage
+from ui.pages.kline_page import KlinePage
 from ui.pages.xinjing_page import XinjingPage
 from ui.pages.jingjie_page import JingjiePage
 from ui.pages.lingshi_page import LingshiPage
@@ -51,15 +53,16 @@ def main(page: ft.Page):
     tongyu_svc = TongyuService(db)
     panel_svc = PanelService(db)
     daily_task_svc = DailyTaskService(db)
+    kline_svc = KlineService(db)
 
     # 检查是否首次启动
     config = db.get_user_config()
     if not config:
         _show_onboarding(page, db, lambda: _show_main(
-            page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc
+            page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc, kline_svc
         ))
     else:
-        _show_main(page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc)
+        _show_main(page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc, kline_svc)
 
 
 def _show_onboarding(page: ft.Page, db: DatabaseManager, on_complete):
@@ -198,7 +201,7 @@ def _show_onboarding(page: ft.Page, db: DatabaseManager, on_complete):
     )
 
 
-def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc):
+def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc, kline_svc):
     """显示主界面"""
     # 页面容器
     content_area = ft.Container(expand=True)
@@ -211,14 +214,16 @@ def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc
             if index == 0:
                 pages[index] = PanelPage(page, panel_svc)
             elif index == 1:
-                pages[index] = XinjingPage(page, spirit_svc, daily_task_svc)
+                pages[index] = KlinePage(page, kline_svc)
             elif index == 2:
-                pages[index] = JingjiePage(page, realm_svc)
+                pages[index] = XinjingPage(page, spirit_svc, daily_task_svc)
             elif index == 3:
-                pages[index] = LingshiPage(page, lingshi_svc)
+                pages[index] = JingjiePage(page, realm_svc)
             elif index == 4:
-                pages[index] = TongyuPage(page, tongyu_svc)
+                pages[index] = LingshiPage(page, lingshi_svc)
             elif index == 5:
+                pages[index] = TongyuPage(page, tongyu_svc)
+            elif index == 6:
                 pages[index] = SettingsPage(page, db)
         return pages[index]
 
@@ -236,6 +241,7 @@ def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc
         on_change=on_nav_change,
         destinations=[
             ft.NavigationBarDestination(icon=ft.Icons.HOME_OUTLINED, selected_icon=ft.Icons.HOME, label="面板"),
+            ft.NavigationBarDestination(icon=ft.Icons.SHOW_CHART, selected_icon=ft.Icons.SHOW_CHART, label="K线"),
             ft.NavigationBarDestination(icon=ft.Icons.SELF_IMPROVEMENT_OUTLINED, selected_icon=ft.Icons.SELF_IMPROVEMENT, label="心境"),
             ft.NavigationBarDestination(icon=ft.Icons.SCHOOL_OUTLINED, selected_icon=ft.Icons.SCHOOL, label="境界"),
             ft.NavigationBarDestination(icon=ft.Icons.ATTACH_MONEY_OUTLINED, selected_icon=ft.Icons.ATTACH_MONEY, label="灵石"),

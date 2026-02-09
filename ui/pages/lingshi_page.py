@@ -486,7 +486,7 @@ class LingshiPage(ft.Column):
             dlg.open = False
             self._page.update()
             color = C.SUCCESS if result["success"] else C.WARNING
-            _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=color))
+            _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=color)
             _sb.open = True
             self._page.overlay.append(_sb)
             self._page.update()

@@ -452,7 +452,7 @@ class TongyuPage(ft.Column):
             dlg.open = False
             self._page.update()
             if result["success"]:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()
@@ -485,7 +485,7 @@ class TongyuPage(ft.Column):
             dlg.open = False
             self._page.update()
             if result["success"]:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()

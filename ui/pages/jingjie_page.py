@@ -238,7 +238,7 @@ class JingjiePage(ft.Column):
                             ft.Text(
                                 st["name"], size=14,
                                 color=C.TEXT_HINT if st["is_completed"] else C.TEXT_PRIMARY,
-                                text_decoration=ft.TextDecoration.LINE_THROUGH if st["is_completed"] else None,
+                                style=ft.TextStyle(decoration=ft.TextDecoration.LINE_THROUGH) if st["is_completed"] else None,
                                 expand=True,
                             ),
                             ft.IconButton(
@@ -391,12 +391,12 @@ class JingjiePage(ft.Column):
         def on_advance(e):
             result = self.svc.advance_realm(realm_id)
             if result["success"]:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()
             else:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()
@@ -473,12 +473,12 @@ class JingjiePage(ft.Column):
             dlg.open = False
             self._page.update()
             if result["success"]:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()
             else:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()

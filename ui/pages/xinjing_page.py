@@ -143,16 +143,37 @@ class XinjingPage(ft.Column):
             else:
                 result = self.svc.complete_repeatable_task(task["id"])
             if result["success"]:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()
             else:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()
             self._refresh()
+
+        def on_delete(e):
+            def confirm_delete(e):
+                self.svc.delete_task(task["id"])
+                dlg.open = False
+                self._page.update()
+                _sb = ft.SnackBar(ft.Text(f"已删除: {task['name']}"), bgcolor=C.WARNING)
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
+                self._refresh()
+            dlg = ft.AlertDialog(
+                title=ft.Text("确认删除"),
+                content=ft.Text(f"确定要删除任务「{task['name']}」吗？"),
+                actions=[
+                    ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                    ft.TextButton("删除", on_click=confirm_delete,
+                                  style=ft.ButtonStyle(color=C.ERROR)),
+                ],
+            )
+            self._page.show_dialog(dlg)
 
         # 连续打卡信息
         streak_text = ""
@@ -205,6 +226,12 @@ class XinjingPage(ft.Column):
                     icon_size=28,
                     on_click=None if (completed and task["submission_type"] == "daily_checkin") else on_complete,
                 ),
+                ft.IconButton(
+                    icon=ft.Icons.DELETE_OUTLINE,
+                    icon_color=C.TEXT_HINT,
+                    icon_size=20,
+                    on_click=on_delete,
+                ),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
             padding=ft.Padding.only(left=14, right=6, top=10, bottom=10),
             margin=ft.Margin.symmetric(horizontal=16, vertical=4),
@@ -234,11 +261,32 @@ class XinjingPage(ft.Column):
         def on_demon(e):
             result = self.svc.record_demon(task["id"])
             if result["success"]:
-                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.ERROR))
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.ERROR)
                 _sb.open = True
                 self._page.overlay.append(_sb)
                 self._page.update()
             self._refresh()
+
+        def on_delete(e):
+            def confirm_delete(e):
+                self.svc.delete_task(task["id"])
+                dlg.open = False
+                self._page.update()
+                _sb = ft.SnackBar(ft.Text(f"已删除: {task['name']}"), bgcolor=C.WARNING)
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
+                self._refresh()
+            dlg = ft.AlertDialog(
+                title=ft.Text("确认删除"),
+                content=ft.Text(f"确定要删除心魔「{task['name']}」吗？"),
+                actions=[
+                    ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                    ft.TextButton("删除", on_click=confirm_delete,
+                                  style=ft.ButtonStyle(color=C.ERROR)),
+                ],
+            )
+            self._page.show_dialog(dlg)
 
         effect_parts = [f"心境{task['spirit_effect']:+d}"]
         if task["blood_effect"]:
@@ -273,6 +321,12 @@ class XinjingPage(ft.Column):
                     style=ft.ButtonStyle(
                         overlay_color=ft.Colors.with_opacity(0.12, C.ERROR),
                     ),
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.DELETE_OUTLINE,
+                    icon_color=C.TEXT_HINT,
+                    icon_size=20,
+                    on_click=on_delete,
                 ),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
             padding=ft.Padding.only(left=14, right=6, top=10, bottom=10),

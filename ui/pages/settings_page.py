@@ -316,7 +316,7 @@ class SettingsPage(ft.Column):
             )
             dlg.open = False
             self._page.update()
-            _sb = ft.SnackBar(ft.SnackBar(ft.Text("AI 配置已保存"), bgcolor=C.SUCCESS))
+            _sb = ft.SnackBar(ft.Text("AI 配置已保存"), bgcolor=C.SUCCESS)
             _sb.open = True
             self._page.overlay.append(_sb)
             self._page.update()
@@ -340,17 +340,17 @@ class SettingsPage(ft.Column):
         backup_file = backup_dir / f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
         try:
             shutil.copy2(self.db.db_path, str(backup_file))
-            _sb = ft.SnackBar(ft.SnackBar(ft.Text(f"备份成功: {backup_file.name}"), bgcolor=C.SUCCESS))
+            _sb = ft.SnackBar(ft.Text(f"备份成功: {backup_file.name}"), bgcolor=C.SUCCESS)
             _sb.open = True
             self._page.overlay.append(_sb)
             self._page.update()
         except Exception as ex:
-            _sb = ft.SnackBar(ft.SnackBar(ft.Text(f"备份失败: {ex}"), bgcolor=C.ERROR))
+            _sb = ft.SnackBar(ft.Text(f"备份失败: {ex}"), bgcolor=C.ERROR)
             _sb.open = True
             self._page.overlay.append(_sb)
             self._page.update()
     def _restore(self):
-        _sb = ft.SnackBar(ft.SnackBar(ft.Text("恢复功能开发中"), bgcolor=C.WARNING))
+        _sb = ft.SnackBar(ft.Text("恢复功能开发中"), bgcolor=C.WARNING)
         _sb.open = True
         self._page.overlay.append(_sb)
         self._page.update()
@@ -361,7 +361,7 @@ class SettingsPage(ft.Column):
             Base.metadata.create_all(self.db.engine)
             dlg.open = False
             self._page.update()
-            _sb = ft.SnackBar(ft.SnackBar(ft.Text("应用已重置"), bgcolor=C.WARNING))
+            _sb = ft.SnackBar(ft.Text("应用已重置"), bgcolor=C.WARNING)
             _sb.open = True
             self._page.overlay.append(_sb)
             self._page.update()

@@ -1,64 +1,41 @@
 name: Build APK
-
 on:
   push:
-    branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.10'
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      - name: Install Flet
-        run: pip install flet==0.80.5
+      - name: Install dependencies
+        run: |
+          pip install flet==0.80.5
+          pip install sqlalchemy
 
       - name: Build APK
         run: |
-          flet build apk \
-            --yes \
-            --project fanrenxiuxian3w \
-            --product "凡人修仙3w天" \
-            --org com.fanren \
-            --description "修仙主题个人生命管理"
+          flet build apk --project "凡人修仙3万天" --product "凡人修仙3万天" --org com.xiuxian.fanren --icon assets/icon.png
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: fanrenxiuxian3w-apk
           path: build/apk/*.apk
-          if-no-files-found: warn
-
-      - name: Find APK
-        id: find_apk
-        run: |
-          APK=$(find build/ -name "*.apk" -type f | head -1)
-          echo "apk_path=$APK" >> $GITHUB_OUTPUT
-          echo "Found APK: $APK"
-          ls -lh $APK 2>/dev/null || echo "No APK found, listing build dir:"
-          find build/ -type f 2>/dev/null | head -20
 
       - name: Create Release
-        if: steps.find_apk.outputs.apk_path != ''
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: "凡人修仙3w天 v1.0.0"
-          files: ${{ steps.find_apk.outputs.apk_path }}
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: build/apk/*.apk

@@ -218,9 +218,10 @@ class JingjiePage(ft.Column):
                         else:
                             result = self.svc.complete_sub_task(st_id)
                             if result.get("realm_ready_to_advance"):
-                                self._page.open(ft.SnackBar(
-                                    ft.Text("🎉 所有任务完成！可以晋升了"), bgcolor=C.SUCCESS,
-                                ))
+                                _sb = ft.SnackBar(ft.Text("🎉 所有任务完成！可以晋升了"), bgcolor=C.SUCCESS)
+                                _sb.open = True
+                                self._page.overlay.append(_sb)
+                                self._page.update()
                         self._refresh()
                     return toggle
 
@@ -390,9 +391,15 @@ class JingjiePage(ft.Column):
         def on_advance(e):
             result = self.svc.advance_realm(realm_id)
             if result["success"]:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             else:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             self._refresh()
 
         return ft.Container(
@@ -465,9 +472,15 @@ class JingjiePage(ft.Column):
             result = self.svc.create_realm(name, desc_field.value, realm_type=realm_type)
             self._page.close(dlg)
             if result["success"]:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             else:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
@@ -478,7 +491,7 @@ class JingjiePage(ft.Column):
                 ft.TextButton("创建", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _show_add_skill(self, realm_id: int):
         name_field = ft.TextField(label="技能名称", autofocus=True)
@@ -499,7 +512,7 @@ class JingjiePage(ft.Column):
                 ft.TextButton("添加", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _show_add_sub_task(self, skill_id: int):
         name_field = ft.TextField(label="子任务名称", autofocus=True)
@@ -520,7 +533,7 @@ class JingjiePage(ft.Column):
                 ft.TextButton("添加", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _delete_skill(self, skill_id: int):
         self.svc.delete_skill(skill_id)

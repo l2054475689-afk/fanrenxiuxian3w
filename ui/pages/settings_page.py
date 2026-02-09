@@ -260,7 +260,7 @@ class SettingsPage(ft.Column):
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _edit_target(self):
         field = ft.TextField(label="目标灵石", keyboard_type=ft.KeyboardType.NUMBER)
@@ -288,7 +288,7 @@ class SettingsPage(ft.Column):
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _edit_ai_config(self):
         provider_dd = ft.Dropdown(
@@ -313,7 +313,10 @@ class SettingsPage(ft.Column):
                 model=model_field.value or None,
             )
             self._page.close(dlg)
-            self._page.open(ft.SnackBar(ft.Text("AI 配置已保存"), bgcolor=C.SUCCESS))
+            _sb = ft.SnackBar(ft.SnackBar(ft.Text("AI 配置已保存"), bgcolor=C.SUCCESS))
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
@@ -324,7 +327,7 @@ class SettingsPage(ft.Column):
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _backup(self):
         import shutil
@@ -334,20 +337,30 @@ class SettingsPage(ft.Column):
         backup_file = backup_dir / f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
         try:
             shutil.copy2(self.db.db_path, str(backup_file))
-            self._page.open(ft.SnackBar(ft.Text(f"备份成功: {backup_file.name}"), bgcolor=C.SUCCESS))
+            _sb = ft.SnackBar(ft.SnackBar(ft.Text(f"备份成功: {backup_file.name}"), bgcolor=C.SUCCESS))
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
         except Exception as ex:
-            self._page.open(ft.SnackBar(ft.Text(f"备份失败: {ex}"), bgcolor=C.ERROR))
-
+            _sb = ft.SnackBar(ft.SnackBar(ft.Text(f"备份失败: {ex}"), bgcolor=C.ERROR))
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
     def _restore(self):
-        self._page.open(ft.SnackBar(ft.Text("恢复功能开发中"), bgcolor=C.WARNING))
-
+        _sb = ft.SnackBar(ft.SnackBar(ft.Text("恢复功能开发中"), bgcolor=C.WARNING))
+        _sb.open = True
+        self._page.overlay.append(_sb)
+        self._page.update()
     def _confirm_reset(self):
         def on_confirm(e):
             from database.models import Base
             Base.metadata.drop_all(self.db.engine)
             Base.metadata.create_all(self.db.engine)
             self._page.close(dlg)
-            self._page.open(ft.SnackBar(ft.Text("应用已重置"), bgcolor=C.WARNING))
+            _sb = ft.SnackBar(ft.SnackBar(ft.Text("应用已重置"), bgcolor=C.WARNING))
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
@@ -358,7 +371,7 @@ class SettingsPage(ft.Column):
                 ft.TextButton("确认重置", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _refresh(self):
         self.controls.clear()

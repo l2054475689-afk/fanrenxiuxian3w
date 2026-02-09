@@ -485,7 +485,10 @@ class LingshiPage(ft.Column):
                 result = self.svc.add_expense(amount, category_dd.value, desc_field.value)
             self._page.close(dlg)
             color = C.SUCCESS if result["success"] else C.WARNING
-            self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=color))
+            _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=color))
+            _sb.open = True
+            self._page.overlay.append(_sb)
+            self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
@@ -496,7 +499,7 @@ class LingshiPage(ft.Column):
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _show_budget_dialog(self):
         category_dd = ft.Dropdown(
@@ -522,7 +525,7 @@ class LingshiPage(ft.Column):
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _refresh(self):
         self.controls.clear()

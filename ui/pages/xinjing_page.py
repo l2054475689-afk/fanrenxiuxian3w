@@ -143,9 +143,15 @@ class XinjingPage(ft.Column):
             else:
                 result = self.svc.complete_repeatable_task(task["id"])
             if result["success"]:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             else:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             self._refresh()
 
         # 连续打卡信息
@@ -228,7 +234,10 @@ class XinjingPage(ft.Column):
         def on_demon(e):
             result = self.svc.record_demon(task["id"])
             if result["success"]:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.ERROR))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.ERROR))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             self._refresh()
 
         effect_parts = [f"心境{task['spirit_effect']:+d}"]
@@ -538,7 +547,7 @@ class XinjingPage(ft.Column):
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     # ─── 辅助 ───────────────────────────────────────────────
     def _stat_item(self, emoji: str, value: str, label: str, accent: str = C.TEXT_PRIMARY) -> ft.Column:

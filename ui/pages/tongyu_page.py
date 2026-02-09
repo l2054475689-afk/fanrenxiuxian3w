@@ -451,7 +451,10 @@ class TongyuPage(ft.Column):
             result = self.svc.create_person(name, type_dd.value)
             self._page.close(dlg)
             if result["success"]:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
@@ -462,7 +465,7 @@ class TongyuPage(ft.Column):
                 ft.TextButton("添加", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _show_add_event(self):
         desc_field = ft.TextField(label="事件描述", autofocus=True, multiline=True)
@@ -480,7 +483,10 @@ class TongyuPage(ft.Column):
             )
             self._page.close(dlg)
             if result["success"]:
-                self._page.open(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
@@ -491,7 +497,7 @@ class TongyuPage(ft.Column):
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _edit_notes(self, detail: dict):
         notes_field = ft.TextField(
@@ -512,7 +518,7 @@ class TongyuPage(ft.Column):
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
-        self._page.open(dlg)
+        self._page.show_dialog(dlg)
 
     def _refresh(self):
         self.controls.clear()

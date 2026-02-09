@@ -247,7 +247,8 @@ class SettingsPage(ft.Column):
                 year = int(field.value)
                 if 1900 < year < 2100:
                     self.db.init_user_config(year)
-                    self._page.close(dlg)
+                    dlg.open = False
+                    self._page.update()
                     self._refresh()
             except ValueError:
                 pass
@@ -256,7 +257,7 @@ class SettingsPage(ft.Column):
             title=ft.Text("设置出生年份"),
             content=field,
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
@@ -275,7 +276,8 @@ class SettingsPage(ft.Column):
                         uc = s.query(UserConfig).first()
                         if uc:
                             uc.target_money = target
-                    self._page.close(dlg)
+                    dlg.open = False
+                    self._page.update()
                     self._refresh()
             except ValueError:
                 pass
@@ -284,7 +286,7 @@ class SettingsPage(ft.Column):
             title=ft.Text("设置目标灵石"),
             content=field,
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
@@ -312,7 +314,8 @@ class SettingsPage(ft.Column):
                 api_base=base_field.value or None,
                 model=model_field.value or None,
             )
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             _sb = ft.SnackBar(ft.SnackBar(ft.Text("AI 配置已保存"), bgcolor=C.SUCCESS))
             _sb.open = True
             self._page.overlay.append(_sb)
@@ -323,7 +326,7 @@ class SettingsPage(ft.Column):
             title=ft.Text("AI 接口设置"),
             content=ft.Column([provider_dd, key_field, base_field, model_field], tight=True, spacing=8),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
@@ -356,7 +359,8 @@ class SettingsPage(ft.Column):
             from database.models import Base
             Base.metadata.drop_all(self.db.engine)
             Base.metadata.create_all(self.db.engine)
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             _sb = ft.SnackBar(ft.SnackBar(ft.Text("应用已重置"), bgcolor=C.WARNING))
             _sb.open = True
             self._page.overlay.append(_sb)
@@ -367,7 +371,7 @@ class SettingsPage(ft.Column):
             title=ft.Text("⚠️ 确认重置"),
             content=ft.Text("此操作将删除所有数据，不可恢复！"),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("确认重置", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
             ],
         )

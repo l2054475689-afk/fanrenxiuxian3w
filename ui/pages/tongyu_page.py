@@ -449,7 +449,8 @@ class TongyuPage(ft.Column):
             if not name:
                 return
             result = self.svc.create_person(name, type_dd.value)
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             if result["success"]:
                 _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
                 _sb.open = True
@@ -461,7 +462,7 @@ class TongyuPage(ft.Column):
             title=ft.Text("添加人物"),
             content=ft.Column([name_field, type_dd], tight=True, spacing=8),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("添加", on_click=on_save),
             ],
         )
@@ -481,7 +482,8 @@ class TongyuPage(ft.Column):
                 location=location_field.value,
                 key_info=key_info_field.value,
             )
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             if result["success"]:
                 _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
                 _sb.open = True
@@ -493,7 +495,7 @@ class TongyuPage(ft.Column):
             title=ft.Text("记录事件"),
             content=ft.Column([desc_field, location_field, key_info_field], tight=True, spacing=8),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
@@ -507,14 +509,15 @@ class TongyuPage(ft.Column):
 
         def on_save(e):
             self.svc.update_person(detail["id"], notes=notes_field.value)
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
             title=ft.Text("编辑相处要点"),
             content=notes_field,
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )

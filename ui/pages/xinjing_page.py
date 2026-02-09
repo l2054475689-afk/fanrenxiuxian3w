@@ -505,7 +505,9 @@ class XinjingPage(ft.Column):
             else:
                 self.svc.create_demon_task(name=name, spirit_effect=spirit_val, blood_effect=blood_val)
 
-            self._page.close(dlg)
+            dlg.open = False
+
+            self._page.update()
             self._refresh()
 
         # 构建内容
@@ -534,8 +536,8 @@ class XinjingPage(ft.Column):
             ], spacing=8),
             content=ft.Column(content_controls, tight=True, spacing=8, width=300),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
-                ft.ElevatedButton(
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.Button(
                     "保存",
                     on_click=on_save,
                     bgcolor=accent,

@@ -470,7 +470,8 @@ class JingjiePage(ft.Column):
             if not name:
                 return
             result = self.svc.create_realm(name, desc_field.value, realm_type=realm_type)
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             if result["success"]:
                 _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS))
                 _sb.open = True
@@ -487,7 +488,7 @@ class JingjiePage(ft.Column):
             title=ft.Text("创建境界"),
             content=ft.Column([name_field, desc_field], tight=True, spacing=8),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("创建", on_click=on_save),
             ],
         )
@@ -501,14 +502,15 @@ class JingjiePage(ft.Column):
             if not name:
                 return
             self.svc.add_skill(realm_id, name)
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
             title=ft.Text("添加技能"),
             content=name_field,
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("添加", on_click=on_save),
             ],
         )
@@ -522,14 +524,15 @@ class JingjiePage(ft.Column):
             if not name:
                 return
             self.svc.add_sub_task(skill_id, name)
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
             title=ft.Text("添加子任务"),
             content=name_field,
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("添加", on_click=on_save),
             ],
         )

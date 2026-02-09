@@ -483,7 +483,8 @@ class LingshiPage(ft.Column):
                 result = self.svc.add_income(amount, category_dd.value, desc_field.value)
             else:
                 result = self.svc.add_expense(amount, category_dd.value, desc_field.value)
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             color = C.SUCCESS if result["success"] else C.WARNING
             _sb = ft.SnackBar(ft.SnackBar(ft.Text(result["message"]), bgcolor=color))
             _sb.open = True
@@ -495,7 +496,7 @@ class LingshiPage(ft.Column):
             title=ft.Text("记收入" if txn_type == "income" else "记支出"),
             content=ft.Column([amount_field, category_dd, desc_field], tight=True, spacing=8),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )
@@ -514,14 +515,15 @@ class LingshiPage(ft.Column):
             except (ValueError, TypeError):
                 return
             self.svc.set_budget(category_dd.value, amount)
-            self._page.close(dlg)
+            dlg.open = False
+            self._page.update()
             self._refresh()
 
         dlg = ft.AlertDialog(
             title=ft.Text("设置预算"),
             content=ft.Column([category_dd, amount_field], tight=True, spacing=8),
             actions=[
-                ft.TextButton("取消", on_click=lambda e: self._page.close(dlg)),
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
             ],
         )

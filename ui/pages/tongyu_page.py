@@ -55,12 +55,12 @@ class TongyuPage(ft.Column):
                     ft.Container(expand=True),
                     ft.Container(
                         content=ft.Text(f"{stats['total_people']}人", size=13, color="white", weight=ft.FontWeight.W_500),
-                        padding=ft.padding.symmetric(horizontal=10, vertical=4),
+                        padding=ft.Padding.symmetric(horizontal=10, vertical=4),
                         border_radius=12,
                         bgcolor=C.PRIMARY,
                     ),
                 ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                padding=ft.padding.only(left=20, right=20, top=20, bottom=12),
+                padding=ft.Padding.only(left=20, right=20, top=20, bottom=12),
             ),
 
             # ── 统计卡片 ──
@@ -70,7 +70,7 @@ class TongyuPage(ft.Column):
                     self._stat_card("💬", str(stats["monthly_interactions"]), "本月互动", "#e8f5e9"),
                     self._stat_card("⚠️", str(stats["neglected"]), "需关注", "#fff3e0"),
                 ], alignment=ft.MainAxisAlignment.SPACE_EVENLY),
-                padding=ft.padding.symmetric(horizontal=12),
+                padding=ft.Padding.symmetric(horizontal=12),
             ),
         ]
 
@@ -98,13 +98,13 @@ class TongyuPage(ft.Column):
                                     size=12, weight=ft.FontWeight.BOLD,
                                     color="#e91e63" if b["days_until"] <= 3 else C.WARNING,
                                 ),
-                                padding=ft.padding.symmetric(horizontal=10, vertical=4),
+                                padding=ft.Padding.symmetric(horizontal=10, vertical=4),
                                 border_radius=12,
                                 bgcolor=ft.Colors.with_opacity(0.1, "#e91e63"),
                             ),
                         ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
                         padding=14,
-                        margin=ft.margin.symmetric(horizontal=16, vertical=3),
+                        margin=ft.Margin.symmetric(horizontal=16, vertical=3),
                         border_radius=12,
                         bgcolor=C.CARD_LIGHT,
                         shadow=ft.BoxShadow(
@@ -128,8 +128,8 @@ class TongyuPage(ft.Column):
                     ft.Text("添加人物", size=14, weight=ft.FontWeight.W_500, color=C.PRIMARY),
                 ], alignment=ft.MainAxisAlignment.CENTER, spacing=6),
                 padding=16,
-                margin=ft.margin.symmetric(horizontal=16, vertical=8),
-                border=ft.border.all(1.5, ft.Colors.with_opacity(0.35, C.PRIMARY)),
+                margin=ft.Margin.symmetric(horizontal=16, vertical=8),
+                border=ft.Border.all(1.5, ft.Colors.with_opacity(0.35, C.PRIMARY)),
                 border_radius=12,
                 on_click=lambda e: self._show_add_person(),
             )
@@ -175,13 +175,13 @@ class TongyuPage(ft.Column):
                                 detail["relationship_type"], size=12,
                                 weight=ft.FontWeight.W_500, color="white",
                             ),
-                            padding=ft.padding.symmetric(horizontal=14, vertical=4),
+                            padding=ft.Padding.symmetric(horizontal=14, vertical=4),
                             border_radius=14,
                             bgcolor=rel_color,
                         ),
                     ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=6),
                 ]),
-                padding=ft.padding.only(left=8, right=8, top=8, bottom=16),
+                padding=ft.Padding.only(left=8, right=8, top=8, bottom=16),
             ),
 
             # ── 基本信息 ──
@@ -190,7 +190,7 @@ class TongyuPage(ft.Column):
                     self._info_chip("📅", "认识", detail["met_date"] or "未记录"),
                     self._info_chip("🎂", "生日", detail["birthday"] or "未记录"),
                 ], alignment=ft.MainAxisAlignment.SPACE_EVENLY),
-                padding=ft.padding.symmetric(horizontal=16, vertical=4),
+                padding=ft.Padding.symmetric(horizontal=16, vertical=4),
             ),
 
             # ── 性格标签 ──
@@ -209,11 +209,11 @@ class TongyuPage(ft.Column):
                     ft.Container(
                         content=ft.Text("编辑", size=13, color=C.PRIMARY, weight=ft.FontWeight.W_500),
                         on_click=lambda e: self._edit_notes(detail),
-                        padding=ft.padding.only(top=8),
+                        padding=ft.Padding.only(top=8),
                     ),
                 ]),
                 padding=16,
-                margin=ft.margin.symmetric(horizontal=16, vertical=4),
+                margin=ft.Margin.symmetric(horizontal=16, vertical=4),
                 border_radius=12,
                 bgcolor=C.CARD_LIGHT,
                 shadow=ft.BoxShadow(
@@ -235,7 +235,7 @@ class TongyuPage(ft.Column):
                 ft.Container(
                     content=ft.Text("暂无互动记录", size=13, color=C.TEXT_HINT, text_align=ft.TextAlign.CENTER),
                     padding=20,
-                    margin=ft.margin.symmetric(horizontal=16),
+                    margin=ft.Margin.symmetric(horizontal=16),
                 )
             )
 
@@ -246,7 +246,7 @@ class TongyuPage(ft.Column):
                         ft.Icon(ft.Icons.ADD, color="white", size=18),
                         ft.Text("记录新事件", size=14, weight=ft.FontWeight.W_600, color="white"),
                     ], alignment=ft.MainAxisAlignment.CENTER, spacing=6),
-                    padding=ft.padding.symmetric(horizontal=24, vertical=12),
+                    padding=ft.Padding.symmetric(horizontal=24, vertical=12),
                     border_radius=24,
                     bgcolor=C.PRIMARY,
                     on_click=lambda e: self._show_add_event(),
@@ -270,7 +270,7 @@ class TongyuPage(ft.Column):
                 ft.Text(emoji, size=18),
                 ft.Text(title, size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
             ], spacing=6),
-            padding=ft.padding.only(left=20, top=16, bottom=6),
+            padding=ft.Padding.only(left=20, top=16, bottom=6),
         )
 
     def _stat_card(self, emoji: str, value: str, label: str, bg_color: str) -> ft.Container:
@@ -280,7 +280,7 @@ class TongyuPage(ft.Column):
                 ft.Text(value, size=24, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
                 ft.Text(label, size=11, color=C.TEXT_HINT),
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2),
-            padding=ft.padding.symmetric(horizontal=16, vertical=12),
+            padding=ft.Padding.symmetric(horizontal=16, vertical=12),
             border_radius=14,
             bgcolor=bg_color,
             expand=True,
@@ -303,7 +303,7 @@ class TongyuPage(ft.Column):
                             person["relationship_type"], size=10,
                             color=rel_color, weight=ft.FontWeight.W_500,
                         ),
-                        padding=ft.padding.symmetric(horizontal=8, vertical=2),
+                        padding=ft.Padding.symmetric(horizontal=8, vertical=2),
                         border_radius=8,
                         bgcolor=ft.Colors.with_opacity(0.1, rel_color),
                     ),
@@ -311,7 +311,7 @@ class TongyuPage(ft.Column):
                 ft.Icon(ft.Icons.CHEVRON_RIGHT, color=C.TEXT_HINT, size=20),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
             padding=14,
-            margin=ft.margin.symmetric(horizontal=16, vertical=3),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=3),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -331,7 +331,7 @@ class TongyuPage(ft.Column):
                     ft.Text(value, size=13, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
                 ], spacing=1),
             ], spacing=8),
-            padding=ft.padding.symmetric(horizontal=14, vertical=10),
+            padding=ft.Padding.symmetric(horizontal=14, vertical=10),
             border_radius=12,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -345,7 +345,7 @@ class TongyuPage(ft.Column):
         if not tags:
             return ft.Container(
                 content=ft.Text("暂无标签", size=13, color=C.TEXT_HINT),
-                padding=ft.padding.symmetric(horizontal=20, vertical=8),
+                padding=ft.Padding.symmetric(horizontal=20, vertical=8),
             )
 
         chips = []
@@ -371,7 +371,7 @@ class TongyuPage(ft.Column):
 
         return ft.Container(
             content=ft.Row(chips, wrap=True, spacing=6, run_spacing=6),
-            padding=ft.padding.symmetric(horizontal=16, vertical=4),
+            padding=ft.Padding.symmetric(horizontal=16, vertical=4),
         )
 
     def _event_timeline_item(self, event: dict, is_last: bool = False) -> ft.Container:
@@ -388,7 +388,7 @@ class TongyuPage(ft.Column):
             tag_chips.append(
                 ft.Container(
                     content=ft.Text(t, size=10, color=C.PRIMARY),
-                    padding=ft.padding.symmetric(horizontal=8, vertical=2),
+                    padding=ft.Padding.symmetric(horizontal=8, vertical=2),
                     border_radius=10,
                     bgcolor=ft.Colors.with_opacity(0.08, C.PRIMARY),
                 )
@@ -418,11 +418,11 @@ class TongyuPage(ft.Column):
                             size=12, color=C.TEXT_SECONDARY,
                         ) if event.get("key_info") else ft.Container(),
                     ], spacing=4),
-                    padding=ft.padding.only(left=12, bottom=8),
+                    padding=ft.Padding.only(left=12, bottom=8),
                     expand=True,
                 ),
             ], vertical_alignment=ft.CrossAxisAlignment.START, spacing=8),
-            padding=ft.padding.only(left=24, right=16, top=4),
+            padding=ft.Padding.only(left=24, right=16, top=4),
         )
 
     # ══════════════════════════════════════════════════════

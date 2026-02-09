@@ -56,7 +56,7 @@ class LingshiPage(ft.Column):
                 ft.Text(emoji, size=18),
                 ft.Text(title, size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
             ], spacing=6),
-            padding=ft.padding.only(left=20, top=20, bottom=6),
+            padding=ft.Padding.only(left=20, top=20, bottom=6),
         )
 
     # ── 余额英雄卡 ──────────────────────────────────────
@@ -101,13 +101,13 @@ class LingshiPage(ft.Column):
                             ft.Text(f"-{balance['expense']:,.2f}", size=16, weight=ft.FontWeight.W_600, color="#ef9a9a"),
                         ], spacing=4),
                     ], alignment=ft.MainAxisAlignment.SPACE_AROUND),
-                    padding=ft.padding.symmetric(vertical=8),
+                    padding=ft.Padding.symmetric(vertical=8),
                     border_radius=12,
                     bgcolor=ft.Colors.with_opacity(0.12, "white"),
                 ),
             ], spacing=4),
             padding=24,
-            margin=ft.margin.symmetric(horizontal=16, vertical=8),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=8),
             border_radius=20,
             gradient=ft.LinearGradient(
                 begin=ft.Alignment.TOP_LEFT,
@@ -151,7 +151,7 @@ class LingshiPage(ft.Column):
                     ft.Text("🎯 灵石目标", size=14, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
                     ft.Container(
                         content=ft.Text(f"{pct:.1f}%", size=13, weight=ft.FontWeight.BOLD, color="white"),
-                        padding=ft.padding.symmetric(horizontal=10, vertical=3),
+                        padding=ft.Padding.symmetric(horizontal=10, vertical=3),
                         border_radius=12,
                         bgcolor=C.PRIMARY,
                     ),
@@ -177,7 +177,7 @@ class LingshiPage(ft.Column):
                 ),
             ], spacing=8),
             padding=16,
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -196,7 +196,7 @@ class LingshiPage(ft.Column):
                         ft.Icon(ft.Icons.ADD_CIRCLE, color="white", size=20),
                         ft.Text("记收入", size=14, weight=ft.FontWeight.W_600, color="white"),
                     ], spacing=6, alignment=ft.MainAxisAlignment.CENTER),
-                    padding=ft.padding.symmetric(horizontal=20, vertical=12),
+                    padding=ft.Padding.symmetric(horizontal=20, vertical=12),
                     border_radius=24,
                     bgcolor=C.SUCCESS,
                     on_click=lambda e: self._show_add_dialog("income"),
@@ -213,7 +213,7 @@ class LingshiPage(ft.Column):
                         ft.Icon(ft.Icons.REMOVE_CIRCLE, color="white", size=20),
                         ft.Text("记支出", size=14, weight=ft.FontWeight.W_600, color="white"),
                     ], spacing=6, alignment=ft.MainAxisAlignment.CENTER),
-                    padding=ft.padding.symmetric(horizontal=20, vertical=12),
+                    padding=ft.Padding.symmetric(horizontal=20, vertical=12),
                     border_radius=24,
                     bgcolor=C.ERROR,
                     on_click=lambda e: self._show_add_dialog("expense"),
@@ -225,7 +225,7 @@ class LingshiPage(ft.Column):
                     ),
                 ),
             ]),
-            padding=ft.padding.symmetric(horizontal=16, vertical=8),
+            padding=ft.Padding.symmetric(horizontal=16, vertical=8),
         )
 
     # ── 今日收支列表 ─────────────────────────────────────
@@ -238,7 +238,7 @@ class LingshiPage(ft.Column):
                     ft.Text("今日暂无收支记录", size=14, color=C.TEXT_HINT),
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
                 padding=24,
-                margin=ft.margin.symmetric(horizontal=16),
+                margin=ft.Margin.symmetric(horizontal=16),
                 alignment=ft.Alignment.CENTER,
             )
 
@@ -269,8 +269,8 @@ class LingshiPage(ft.Column):
                             color=C.SUCCESS if is_income else C.ERROR,
                         ),
                     ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                    padding=ft.padding.symmetric(horizontal=16, vertical=10),
-                    margin=ft.margin.symmetric(horizontal=16, vertical=2),
+                    padding=ft.Padding.symmetric(horizontal=16, vertical=10),
+                    margin=ft.Margin.symmetric(horizontal=16, vertical=2),
                     border_radius=12,
                     bgcolor=C.CARD_LIGHT,
                     shadow=ft.BoxShadow(
@@ -293,14 +293,14 @@ class LingshiPage(ft.Column):
                     ft.Container(height=4),
                     ft.Container(
                         content=ft.Text("设置预算", size=13, weight=ft.FontWeight.W_500, color=C.PRIMARY),
-                        padding=ft.padding.symmetric(horizontal=20, vertical=8),
+                        padding=ft.Padding.symmetric(horizontal=20, vertical=8),
                         border_radius=20,
-                        border=ft.border.all(1, C.PRIMARY),
+                        border=ft.Border.all(1, C.PRIMARY),
                         on_click=lambda e: self._show_budget_dialog(),
                     ),
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=6),
                 padding=24,
-                margin=ft.margin.symmetric(horizontal=16),
+                margin=ft.Margin.symmetric(horizontal=16),
                 alignment=ft.Alignment.CENTER,
             )
 
@@ -323,7 +323,7 @@ class LingshiPage(ft.Column):
                     ft.Text(cat["category"], size=14, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
                     ft.Container(
                         content=ft.Text(status_text, size=10, color="white", weight=ft.FontWeight.BOLD),
-                        padding=ft.padding.symmetric(horizontal=8, vertical=2),
+                        padding=ft.Padding.symmetric(horizontal=8, vertical=2),
                         border_radius=8,
                         bgcolor=color,
                     ),
@@ -345,7 +345,7 @@ class LingshiPage(ft.Column):
         return ft.Container(
             content=ft.Column(items, spacing=14),
             padding=16,
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -365,7 +365,7 @@ class LingshiPage(ft.Column):
                     ft.Text("无负债，自由自在！", size=14, color=C.TEXT_HINT),
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
                 padding=24,
-                margin=ft.margin.symmetric(horizontal=16),
+                margin=ft.Margin.symmetric(horizontal=16),
                 alignment=ft.Alignment.CENTER,
             )
 
@@ -410,10 +410,10 @@ class LingshiPage(ft.Column):
                         ),
                     ], spacing=6),
                     padding=16,
-                    margin=ft.margin.symmetric(horizontal=16, vertical=4),
+                    margin=ft.Margin.symmetric(horizontal=16, vertical=4),
                     border_radius=14,
                     bgcolor=C.CARD_LIGHT,
-                    border=ft.border.only(
+                    border=ft.Border.only(
                         left=ft.BorderSide(3, C.ERROR),
                     ),
                     shadow=ft.BoxShadow(
@@ -439,7 +439,7 @@ class LingshiPage(ft.Column):
                     ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, expand=True),
                 ]),
                 padding=16,
-                margin=ft.margin.symmetric(horizontal=16, vertical=4),
+                margin=ft.Margin.symmetric(horizontal=16, vertical=4),
                 border_radius=14,
                 bgcolor=C.CARD_LIGHT,
                 shadow=ft.BoxShadow(

@@ -43,11 +43,11 @@ class PanelPage(ft.Column):
                         content=ft.Text("⚡ 修炼中", size=11, color="white"),
                         bgcolor="#667eea",
                         border_radius=12,
-                        padding=ft.padding.symmetric(horizontal=10, vertical=3),
+                        padding=ft.Padding.symmetric(horizontal=10, vertical=3),
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                    vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                padding=ft.padding.only(left=20, right=20, top=16, bottom=8),
+                padding=ft.Padding.only(left=20, right=20, top=16, bottom=8),
             ),
 
             # 血量卡片 — 深红渐变
@@ -59,8 +59,8 @@ class PanelPage(ft.Column):
                     ft.Container(self._spirit_mini_card(spirit), expand=1),
                     ft.Container(self._lingshi_mini_card(lingshi), expand=1),
                 ], spacing=10),
-                padding=ft.padding.symmetric(horizontal=16),
-                margin=ft.margin.only(top=6),
+                padding=ft.Padding.symmetric(horizontal=16),
+                margin=ft.Margin.only(top=6),
             ),
 
             # 境界进度 — 圆形指示器
@@ -99,7 +99,7 @@ class PanelPage(ft.Column):
                         ),
                         bgcolor=ft.Colors.with_opacity(0.25, "white"),
                         border_radius=10,
-                        padding=ft.padding.symmetric(horizontal=10, vertical=3),
+                        padding=ft.Padding.symmetric(horizontal=10, vertical=3),
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                    vertical_alignment=ft.CrossAxisAlignment.CENTER),
@@ -137,7 +137,7 @@ class PanelPage(ft.Column):
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
             ], spacing=2, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             padding=20,
-            margin=ft.margin.symmetric(horizontal=16, vertical=6),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=6),
             border_radius=16,
             gradient=ft.LinearGradient(
                 begin=ft.Alignment(-1, -1),
@@ -252,12 +252,12 @@ class PanelPage(ft.Column):
                         ft.Container(
                             width=ring_size, height=ring_size,
                             border_radius=ring_size // 2,
-                            border=ft.border.all(5, ft.Colors.with_opacity(0.12, C.PRIMARY)),
+                            border=ft.Border.all(5, ft.Colors.with_opacity(0.12, C.PRIMARY)),
                         ),
                         ft.Container(
                             width=ring_size, height=ring_size,
                             border_radius=ring_size // 2,
-                            border=ft.border.all(5, C.PRIMARY),
+                            border=ft.Border.all(5, C.PRIMARY),
                             clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
                         ),
                         ft.Container(
@@ -273,7 +273,7 @@ class PanelPage(ft.Column):
                 ),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER, spacing=16),
             padding=16,
-            margin=ft.margin.symmetric(horizontal=16, vertical=6),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=6),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -298,7 +298,7 @@ class PanelPage(ft.Column):
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             ),
             padding=16,
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -325,7 +325,7 @@ class PanelPage(ft.Column):
                 content=ft.Text("暂无数据", size=13, color=C.TEXT_HINT,
                                 text_align=ft.TextAlign.CENTER),
                 padding=20,
-                margin=ft.margin.symmetric(horizontal=16, vertical=4),
+                margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             )
 
         max_val = max(max(abs(d["positive"]), abs(d["demon"]), 1) for d in trend)
@@ -337,7 +337,7 @@ class PanelPage(ft.Column):
                 width=width,
                 height=h,
                 bgcolor=color,
-                border_radius=ft.border_radius.only(top_left=4, top_right=4),
+                border_radius=ft.BorderRadius.only(top_left=4, top_right=4),
                 tooltip=str(value),
             )
 
@@ -367,7 +367,7 @@ class PanelPage(ft.Column):
                 vertical_alignment=ft.CrossAxisAlignment.END,
             ),
             height=chart_height + 30,
-            border=ft.border.only(
+            border=ft.Border.only(
                 bottom=ft.BorderSide(1, ft.Colors.with_opacity(0.15, ft.Colors.BLACK)),
             ),
         )
@@ -386,8 +386,8 @@ class PanelPage(ft.Column):
 
         return ft.Container(
             content=ft.Column([chart, legend], spacing=8),
-            padding=ft.padding.only(left=8, right=16, top=8, bottom=12),
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            padding=ft.Padding.only(left=8, right=16, top=8, bottom=12),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(

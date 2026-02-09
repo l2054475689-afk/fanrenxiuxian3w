@@ -149,7 +149,7 @@ def card_container(content, gradient=None, padding=16, on_click=None, margin=Non
     return ft.Container(
         content=content,
         padding=padding,
-        margin=margin or ft.margin.symmetric(horizontal=16, vertical=4),
+        margin=margin or ft.Margin.symmetric(horizontal=16, vertical=4),
         border_radius=border_radius,
         bgcolor=C.CARD_LIGHT if not gradient else None,
         gradient=gradient,
@@ -178,11 +178,11 @@ def glass_card(content, padding=16, opacity=0.85):
     return ft.Container(
         content=content,
         padding=padding,
-        margin=ft.margin.symmetric(horizontal=16, vertical=4),
+        margin=ft.Margin.symmetric(horizontal=16, vertical=4),
         border_radius=16,
         bgcolor=ft.Colors.with_opacity(opacity, "#ffffff"),
         shadow=shadow_soft(opacity=0.08),
-        border=ft.border.all(1, ft.Colors.with_opacity(0.2, "#ffffff")),
+        border=ft.Border.all(1, ft.Colors.with_opacity(0.2, "#ffffff")),
         animate=anim_default(),
     )
 
@@ -252,7 +252,7 @@ def section_title(text: str):
     """区块标题"""
     return ft.Container(
         content=ft.Text(text, size=16, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
-        padding=ft.padding.only(left=20, top=12, bottom=4),
+        padding=ft.Padding.only(left=20, top=12, bottom=4),
     )
 
 

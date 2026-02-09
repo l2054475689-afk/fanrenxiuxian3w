@@ -27,7 +27,7 @@ class SettingsPage(ft.Column):
                     ft.Text("⚙️", size=24),
                     ft.Text("设置", size=22, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
                 ], spacing=8),
-                padding=ft.padding.only(left=20, top=20, bottom=16),
+                padding=ft.Padding.only(left=20, top=20, bottom=16),
             ),
 
             # ── 基本设置 ──
@@ -144,13 +144,13 @@ class SettingsPage(ft.Column):
     def _group_header(self, title: str) -> ft.Container:
         return ft.Container(
             content=ft.Text(title, size=13, color=C.TEXT_HINT, weight=ft.FontWeight.W_500),
-            padding=ft.padding.only(left=32, top=20, bottom=6),
+            padding=ft.Padding.only(left=32, top=20, bottom=6),
         )
 
     def _group_card(self, children: list) -> ft.Container:
         return ft.Container(
             content=ft.Column(children, spacing=0),
-            margin=ft.margin.symmetric(horizontal=16),
+            margin=ft.Margin.symmetric(horizontal=16),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -163,7 +163,7 @@ class SettingsPage(ft.Column):
     def _divider(self) -> ft.Container:
         return ft.Container(
             content=ft.Divider(height=1, color=ft.Colors.with_opacity(0.08, ft.Colors.BLACK)),
-            padding=ft.padding.only(left=64),
+            padding=ft.Padding.only(left=64),
         )
 
     def _setting_row(self, icon, icon_color: str, icon_bg: str,
@@ -183,7 +183,7 @@ class SettingsPage(ft.Column):
                 ], spacing=1, expand=True),
                 ft.Icon(ft.Icons.CHEVRON_RIGHT, color=C.TEXT_HINT, size=20) if show_arrow and on_click else ft.Container(width=20),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER, spacing=12),
-            padding=ft.padding.symmetric(horizontal=14, vertical=12),
+            padding=ft.Padding.symmetric(horizontal=14, vertical=12),
             on_click=on_click,
         )
 
@@ -204,7 +204,7 @@ class SettingsPage(ft.Column):
                 ], spacing=1, expand=True),
                 ft.Switch(value=value, on_change=on_change, active_color=C.PRIMARY),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER, spacing=12),
-            padding=ft.padding.symmetric(horizontal=14, vertical=10),
+            padding=ft.Padding.symmetric(horizontal=14, vertical=10),
         )
 
     def _danger_row(self, icon, title: str, subtitle: str, on_click) -> ft.Container:
@@ -222,7 +222,7 @@ class SettingsPage(ft.Column):
                 ], spacing=1, expand=True),
                 ft.Icon(ft.Icons.CHEVRON_RIGHT, color=C.ERROR, size=20),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER, spacing=12),
-            padding=ft.padding.symmetric(horizontal=14, vertical=12),
+            padding=ft.Padding.symmetric(horizontal=14, vertical=12),
             on_click=on_click,
         )
 

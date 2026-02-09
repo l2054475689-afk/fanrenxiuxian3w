@@ -37,7 +37,7 @@ class JingjiePage(ft.Column):
                     ft.Text("🏔️", size=24),
                     ft.Text("境界", size=22, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
                 ], spacing=8),
-                padding=ft.padding.only(left=20, top=20, bottom=12),
+                padding=ft.Padding.only(left=20, top=20, bottom=12),
             ),
         ]
 
@@ -55,7 +55,7 @@ class JingjiePage(ft.Column):
                     ft.Text("🗺️", size=18),
                     ft.Text("副本", size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
                 ], spacing=6),
-                padding=ft.padding.only(left=20, top=20, bottom=6),
+                padding=ft.Padding.only(left=20, top=20, bottom=6),
             )
         )
         if dungeon:
@@ -73,7 +73,7 @@ class JingjiePage(ft.Column):
                         ft.Text("🏆", size=18),
                         ft.Text("已完成", size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
                     ], spacing=6),
-                    padding=ft.padding.only(left=20, top=20, bottom=6),
+                    padding=ft.Padding.only(left=20, top=20, bottom=6),
                 )
             )
             for r in completed:
@@ -106,7 +106,7 @@ class JingjiePage(ft.Column):
                     ], spacing=2, expand=True),
                     ft.Container(
                         content=ft.Text(f"{pct:.0f}%", size=22, weight=ft.FontWeight.BOLD, color="white"),
-                        padding=ft.padding.all(8),
+                        padding=ft.Padding.all(8),
                     ),
                 ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
                 # 进度条
@@ -120,7 +120,7 @@ class JingjiePage(ft.Column):
                 ),
             ], spacing=12),
             padding=20,
-            margin=ft.margin.symmetric(horizontal=16, vertical=6),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=6),
             border_radius=16,
             gradient=ft.LinearGradient(
                 begin=ft.Alignment.TOP_LEFT,
@@ -168,7 +168,7 @@ class JingjiePage(ft.Column):
                 ),
             ], spacing=10),
             padding=18,
-            margin=ft.margin.symmetric(horizontal=16, vertical=6),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=6),
             border_radius=16,
             gradient=ft.LinearGradient(
                 begin=ft.Alignment.TOP_LEFT,
@@ -246,7 +246,7 @@ class JingjiePage(ft.Column):
                                 style=ft.ButtonStyle(padding=0),
                             ),
                         ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                        padding=ft.padding.only(left=8),
+                        padding=ft.Padding.only(left=8),
                     )
                 )
 
@@ -258,7 +258,7 @@ class JingjiePage(ft.Column):
                         ft.Text("添加子任务", size=13, color=accent),
                     ], spacing=6),
                     on_click=lambda e, sid=skill["id"]: self._show_add_sub_task(sid),
-                    padding=ft.padding.only(left=16, top=6, bottom=4),
+                    padding=ft.Padding.only(left=16, top=6, bottom=4),
                 )
             )
 
@@ -292,7 +292,7 @@ class JingjiePage(ft.Column):
                             bgcolor=ft.Colors.with_opacity(0.12, accent),
                         ),
                         border_radius=2,
-                        padding=ft.padding.only(top=4),
+                        padding=ft.Padding.only(top=4),
                     ),
                 ], spacing=0, expand=True),
                 on_tap=toggle_expand,
@@ -311,11 +311,11 @@ class JingjiePage(ft.Column):
 
         return ft.Container(
             content=ft.Column([header] + sub_items, spacing=2),
-            padding=ft.padding.symmetric(horizontal=16, vertical=12),
-            margin=ft.margin.symmetric(horizontal=16, vertical=3),
+            padding=ft.Padding.symmetric(horizontal=16, vertical=12),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=3),
             border_radius=12,
             bgcolor=C.CARD_LIGHT,
-            border=ft.border.only(
+            border=ft.Border.only(
                 left=ft.BorderSide(3, C.SUCCESS if skill["is_completed"] else accent),
             ),
             shadow=ft.BoxShadow(
@@ -337,7 +337,7 @@ class JingjiePage(ft.Column):
                 ft.Container(height=12),
                 ft.Container(
                     content=ft.Text(f"创建{label}", size=15, weight=ft.FontWeight.W_600, color="white"),
-                    padding=ft.padding.symmetric(horizontal=28, vertical=12),
+                    padding=ft.Padding.symmetric(horizontal=28, vertical=12),
                     border_radius=24,
                     gradient=ft.LinearGradient(
                         colors=[C.PRIMARY, C.PRIMARY_DARK],
@@ -346,7 +346,7 @@ class JingjiePage(ft.Column):
                 ),
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=4),
             padding=32,
-            margin=ft.margin.symmetric(horizontal=16, vertical=8),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=8),
             border_radius=16,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -365,8 +365,8 @@ class JingjiePage(ft.Column):
                 ft.Text(label, size=14, weight=ft.FontWeight.W_500, color=self._DUNGEON_START),
             ], alignment=ft.MainAxisAlignment.CENTER),
             padding=16,
-            margin=ft.margin.symmetric(horizontal=16, vertical=6),
-            border=ft.border.all(1.5, ft.Colors.with_opacity(0.4, self._DUNGEON_START)),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=6),
+            border=ft.Border.all(1.5, ft.Colors.with_opacity(0.4, self._DUNGEON_START)),
             border_radius=12,
             on_click=lambda e: self._show_create_realm(realm_type),
         )
@@ -379,8 +379,8 @@ class JingjiePage(ft.Column):
                 ft.Text("添加技能（大任务）", size=13, color=C.PRIMARY, weight=ft.FontWeight.W_500),
             ], alignment=ft.MainAxisAlignment.CENTER, spacing=6),
             padding=12,
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
-            border=ft.border.all(1, ft.Colors.with_opacity(0.25, C.PRIMARY)),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
+            border=ft.Border.all(1, ft.Colors.with_opacity(0.25, C.PRIMARY)),
             border_radius=10,
             on_click=lambda e: self._show_add_skill(realm_id),
         )
@@ -401,7 +401,7 @@ class JingjiePage(ft.Column):
                     ft.Text("🎉", size=22),
                     ft.Text("境界晋升", size=18, weight=ft.FontWeight.BOLD, color="#5d4037"),
                 ], alignment=ft.MainAxisAlignment.CENTER, spacing=8),
-                padding=ft.padding.symmetric(horizontal=32, vertical=14),
+                padding=ft.Padding.symmetric(horizontal=32, vertical=14),
                 border_radius=28,
                 gradient=ft.LinearGradient(
                     begin=ft.Alignment.CENTER_LEFT,
@@ -416,7 +416,7 @@ class JingjiePage(ft.Column):
                 on_click=on_advance,
             ),
             alignment=ft.Alignment.CENTER,
-            padding=ft.padding.symmetric(vertical=16),
+            padding=ft.Padding.symmetric(vertical=16),
         )
 
     # ── 已完成境界卡片 ───────────────────────────────────
@@ -440,7 +440,7 @@ class JingjiePage(ft.Column):
                 ft.Icon(ft.Icons.EMOJI_EVENTS, color="#ffd54f", size=22),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
             padding=14,
-            margin=ft.margin.symmetric(horizontal=16, vertical=3),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=3),
             border_radius=12,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(

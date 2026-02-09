@@ -53,7 +53,7 @@ class XinjingPage(ft.Column):
                         ),
                         bgcolor=ft.Colors.with_opacity(0.3, "white"),
                         border_radius=14,
-                        padding=ft.padding.symmetric(horizontal=14, vertical=4),
+                        padding=ft.Padding.symmetric(horizontal=14, vertical=4),
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                    vertical_alignment=ft.CrossAxisAlignment.CENTER),
@@ -83,7 +83,7 @@ class XinjingPage(ft.Column):
                     ft.Text(f"{status['max']}", size=11, color=ft.Colors.with_opacity(0.5, "white")),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
             ], spacing=2, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
-            padding=ft.padding.only(left=20, right=20, top=20, bottom=16),
+            padding=ft.Padding.only(left=20, right=20, top=20, bottom=16),
             gradient=ft.LinearGradient(
                 begin=ft.Alignment.TOP_LEFT, end=ft.Alignment.BOTTOM_RIGHT,
                 colors=["#667eea", "#764ba2"],
@@ -200,11 +200,11 @@ class XinjingPage(ft.Column):
                     on_click=None if (completed and task["submission_type"] == "daily_checkin") else on_complete,
                 ),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-            padding=ft.padding.only(left=14, right=6, top=10, bottom=10),
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            padding=ft.Padding.only(left=14, right=6, top=10, bottom=10),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=bg_color,
-            border=ft.border.all(1.5, border_color),
+            border=ft.Border.all(1.5, border_color),
             shadow=ft.BoxShadow(
                 spread_radius=0, blur_radius=6,
                 color=ft.Colors.with_opacity(0.04, ft.Colors.BLACK),
@@ -266,11 +266,11 @@ class XinjingPage(ft.Column):
                     ),
                 ),
             ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-            padding=ft.padding.only(left=14, right=6, top=10, bottom=10),
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            padding=ft.Padding.only(left=14, right=6, top=10, bottom=10),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=ft.Colors.with_opacity(0.03, C.ERROR),
-            border=ft.border.all(1.5, ft.Colors.with_opacity(0.35, C.ERROR)),
+            border=ft.Border.all(1.5, ft.Colors.with_opacity(0.35, C.ERROR)),
             shadow=ft.BoxShadow(
                 spread_radius=0, blur_radius=6,
                 color=ft.Colors.with_opacity(0.06, C.ERROR),
@@ -315,7 +315,7 @@ class XinjingPage(ft.Column):
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             ),
             padding=16,
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -343,7 +343,7 @@ class XinjingPage(ft.Column):
                 width=width,
                 height=h,
                 bgcolor=color,
-                border_radius=ft.border_radius.only(top_left=4, top_right=4),
+                border_radius=ft.BorderRadius.only(top_left=4, top_right=4),
                 tooltip=f"{value:+d}",
             )
 
@@ -371,7 +371,7 @@ class XinjingPage(ft.Column):
                 vertical_alignment=ft.CrossAxisAlignment.END,
             ),
             height=chart_height + 26,
-            border=ft.border.only(
+            border=ft.Border.only(
                 bottom=ft.BorderSide(1, ft.Colors.with_opacity(0.15, ft.Colors.BLACK)),
             ),
         )
@@ -389,8 +389,8 @@ class XinjingPage(ft.Column):
 
         return ft.Container(
             content=ft.Column([chart, legend], spacing=8),
-            padding=ft.padding.only(left=8, right=16, top=8, bottom=12),
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            padding=ft.Padding.only(left=8, right=16, top=8, bottom=12),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -413,7 +413,7 @@ class XinjingPage(ft.Column):
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             ),
             padding=16,
-            margin=ft.margin.symmetric(horizontal=16, vertical=4),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
             border_radius=14,
             bgcolor=C.CARD_LIGHT,
             shadow=ft.BoxShadow(
@@ -440,8 +440,8 @@ class XinjingPage(ft.Column):
                     size=14, color=accent, weight=ft.FontWeight.W_500,
                 ),
             ], alignment=ft.MainAxisAlignment.CENTER),
-            padding=14, margin=ft.margin.symmetric(horizontal=16, vertical=8),
-            border=ft.border.all(1.5, ft.Colors.with_opacity(0.35, accent)),
+            padding=14, margin=ft.Margin.symmetric(horizontal=16, vertical=8),
+            border=ft.Border.all(1.5, ft.Colors.with_opacity(0.35, accent)),
             border_radius=14,
             on_click=on_add,
         )

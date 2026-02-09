@@ -1,9 +1,10 @@
 """
 心境系统页面 v2
-美化版：蓝紫渐变头部、绿色正面卡片、暗红心魔卡片、手动柱状图统计、优化对话框
+美化版：蓝紫渐变头部、绿色正面卡片、暗红心魔卡片、日常任务、手动柱状图统计、优化对话框
 """
 import flet as ft
 from services.spirit_service import SpiritService
+from services.daily_task_service import DailyTaskService
 from services.constants import Colors as C, SPIRIT_LEVELS
 from ui.styles import card_container, section_title
 
@@ -11,10 +12,11 @@ from ui.styles import card_container, section_title
 class XinjingPage(ft.Column):
     """心境系统页"""
 
-    def __init__(self, page: ft.Page, spirit_service: SpiritService):
+    def __init__(self, page: ft.Page, spirit_service: SpiritService, daily_task_service: DailyTaskService):
         super().__init__()
         self._page = page
         self.svc = spirit_service
+        self.daily_svc = daily_task_service
         self.spacing = 0
         self.scroll = ft.ScrollMode.AUTO
         self.expand = True
@@ -98,7 +100,7 @@ class XinjingPage(ft.Column):
     def _tab_bar(self) -> ft.Container:
         """Tab 切换栏"""
 
-        tab_labels = ["正面修炼", "心魔", "统计"]
+        tab_labels = ["正面修炼", "心魔", "日常任务", "统计"]
         tabs = []
         for i, label in enumerate(tab_labels):
             is_sel = (i == self._current_tab)
@@ -120,6 +122,8 @@ class XinjingPage(ft.Column):
             return self._positive_tab()
         elif self._current_tab == 1:
             return self._demon_tab()
+        elif self._current_tab == 2:
+            return self._daily_tab()
         else:
             return self._stats_tab()
 
@@ -340,6 +344,343 @@ class XinjingPage(ft.Column):
                 offset=ft.Offset(0, 2),
             ),
         )
+
+    # ─── 日常任务 Tab ───────────────────────────────────────
+    def _daily_tab(self) -> ft.Column:
+        """日常任务 Tab — 主线/支线分区"""
+        tasks = self.daily_svc.get_today_tasks()
+        completion = self.daily_svc.get_today_completion_rate()
+
+        items = []
+
+        # 今日完成率卡片
+        items.append(self._daily_completion_card(completion))
+
+        # 按分类分组
+        main_tasks = [t for t in tasks if t["category"] == "main"]
+        side_tasks = [t for t in tasks if t["category"] == "side"]
+
+        # 主线任务分区
+        if main_tasks:
+            items.append(ft.Container(
+                content=ft.Row([
+                    ft.Text("📋", size=16),
+                    ft.Text("主线任务", size=15, weight=ft.FontWeight.W_600, color="#667eea"),
+                    ft.Text(f"({len(main_tasks)})", size=13, color=C.TEXT_HINT),
+                ], spacing=6, vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                padding=ft.Padding.only(left=20, top=12, bottom=4),
+            ))
+            for task in main_tasks:
+                items.append(self._daily_task_card(task, is_main=True))
+
+        # 支线任务分区
+        if side_tasks:
+            items.append(ft.Container(
+                content=ft.Row([
+                    ft.Text("🏠", size=16),
+                    ft.Text("支线任务", size=15, weight=ft.FontWeight.W_600, color="#f59e0b"),
+                    ft.Text(f"({len(side_tasks)})", size=13, color=C.TEXT_HINT),
+                ], spacing=6, vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                padding=ft.Padding.only(left=20, top=12, bottom=4),
+            ))
+            for task in side_tasks:
+                items.append(self._daily_task_card(task, is_main=False))
+
+        # 空状态
+        if not main_tasks and not side_tasks:
+            items.append(ft.Container(
+                content=ft.Column([
+                    ft.Text("📝", size=40, text_align=ft.TextAlign.CENTER),
+                    ft.Text("今天还没有任务", size=15, color=C.TEXT_HINT, text_align=ft.TextAlign.CENTER),
+                    ft.Text("点击下方按钮添加", size=13, color=C.TEXT_HINT, text_align=ft.TextAlign.CENTER),
+                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=6),
+                padding=40,
+                alignment=ft.Alignment(0, 0),
+            ))
+
+        # 添加任务按钮
+        items.append(self._daily_add_button())
+
+        return ft.Column(items, spacing=0)
+
+    def _daily_completion_card(self, completion: dict) -> ft.Container:
+        """今日完成率卡片 — 蓝紫渐变"""
+        total = completion["total"]
+        completed = completion["completed"]
+        rate = completion["rate"]
+
+        return ft.Container(
+            content=ft.Column([
+                ft.Row([
+                    ft.Text("📊 今日进度", size=15, weight=ft.FontWeight.W_600, color="white"),
+                    ft.Text(
+                        f"{completed}/{total}",
+                        size=15, weight=ft.FontWeight.BOLD, color="white",
+                    ),
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.Container(height=6),
+                ft.ProgressBar(
+                    value=rate, height=10,
+                    color="white",
+                    bgcolor=ft.Colors.with_opacity(0.25, "white"),
+                    border_radius=5,
+                ),
+                ft.Container(height=4),
+                ft.Text(
+                    f"完成率 {rate * 100:.0f}%" if total > 0 else "暂无任务",
+                    size=12, color=ft.Colors.with_opacity(0.85, "white"),
+                    text_align=ft.TextAlign.CENTER,
+                ),
+            ], spacing=2, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+            padding=ft.Padding.symmetric(horizontal=20, vertical=14),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=8),
+            border_radius=14,
+            gradient=ft.LinearGradient(
+                begin=ft.Alignment(-1, -1),
+                end=ft.Alignment(1, 1),
+                colors=["#667eea", "#764ba2"],
+            ),
+            shadow=ft.BoxShadow(
+                spread_radius=0, blur_radius=12,
+                color=ft.Colors.with_opacity(0.2, "#667eea"),
+                offset=ft.Offset(0, 4),
+            ),
+        )
+
+    def _daily_task_card(self, task: dict, is_main: bool = True) -> ft.Container:
+        """日常任务卡片"""
+        completed = task["is_completed"]
+        accent = "#667eea" if is_main else "#f59e0b"
+        emoji = "📋" if is_main else "🏠"
+
+        # 优先级标签
+        priority = task["priority"]
+        priority_map = {
+            "high": ("高", C.ERROR),
+            "medium": ("中", "#667eea"),
+            "low": ("低", C.TEXT_HINT),
+        }
+        pri_label, pri_color = priority_map.get(priority, ("中", "#667eea"))
+
+        def on_toggle(e):
+            if completed:
+                result = self.daily_svc.uncomplete_daily_task(task["id"])
+            else:
+                result = self.daily_svc.complete_daily_task(task["id"])
+            if result["success"]:
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.SUCCESS if not completed else C.WARNING)
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
+            self._refresh()
+
+        def on_delete(e):
+            def confirm_delete(e):
+                result = self.daily_svc.delete_daily_task(task["id"])
+                dlg.open = False
+                self._page.update()
+                _sb = ft.SnackBar(ft.Text(result["message"]), bgcolor=C.WARNING)
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
+                self._refresh()
+            dlg = ft.AlertDialog(
+                title=ft.Text("确认删除"),
+                content=ft.Text(f"确定要删除任务「{task['name']}」吗？"),
+                actions=[
+                    ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                    ft.TextButton("删除", on_click=confirm_delete,
+                                  style=ft.ButtonStyle(color=C.ERROR)),
+                ],
+            )
+            self._page.show_dialog(dlg)
+
+        # 颜色方案
+        if completed:
+            border_color = ft.Colors.with_opacity(0.15, accent)
+            bg_color = ft.Colors.with_opacity(0.04, "#999999")
+            text_color = C.TEXT_HINT
+            icon = ft.Icons.CHECK_CIRCLE
+            icon_color = C.SUCCESS
+        else:
+            border_color = ft.Colors.with_opacity(0.4, accent)
+            bg_color = C.CARD_LIGHT
+            text_color = C.TEXT_PRIMARY
+            icon = ft.Icons.RADIO_BUTTON_UNCHECKED
+            icon_color = C.TEXT_HINT
+
+        # 任务名（已完成加删除线）
+        if completed:
+            name_text = ft.Text(
+                task["name"], size=15, weight=ft.FontWeight.W_500,
+                color=text_color,
+                style=ft.TextStyle(decoration=ft.TextDecoration.LINE_THROUGH),
+            )
+        else:
+            name_text = ft.Text(
+                task["name"], size=15, weight=ft.FontWeight.W_500,
+                color=text_color,
+            )
+
+        # 名称行：名字 + 优先级标签
+        name_row = ft.Row([
+            name_text,
+            ft.Container(
+                content=ft.Text(pri_label, size=10, weight=ft.FontWeight.BOLD, color="white"),
+                bgcolor=pri_color,
+                border_radius=8,
+                padding=ft.Padding.symmetric(horizontal=8, vertical=2),
+            ),
+        ], spacing=8, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+
+        # 备注行
+        info_parts = []
+        if task.get("notes"):
+            info_parts.append(task["notes"])
+
+        info_row = ft.Text(
+            " · ".join(info_parts) if info_parts else "",
+            size=12, color=C.TEXT_HINT,
+        ) if info_parts else None
+
+        middle_col_controls = [name_row]
+        if info_row:
+            middle_col_controls.append(info_row)
+
+        return ft.Container(
+            content=ft.Row([
+                # 左边 emoji
+                ft.Container(
+                    content=ft.Text(emoji, size=26),
+                    width=44, height=44,
+                    border_radius=12,
+                    bgcolor=ft.Colors.with_opacity(0.08, accent),
+                    alignment=ft.Alignment(0, 0),
+                ),
+                # 中间：名称 + 备注
+                ft.Column(middle_col_controls, spacing=2, expand=True),
+                # 右边：完成 + 删除
+                ft.IconButton(
+                    icon=icon,
+                    icon_color=icon_color,
+                    icon_size=28,
+                    on_click=on_toggle,
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.DELETE_OUTLINE,
+                    icon_color=C.TEXT_HINT,
+                    icon_size=20,
+                    on_click=on_delete,
+                ),
+            ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+            padding=ft.Padding.only(left=14, right=6, top=10, bottom=10),
+            margin=ft.Margin.symmetric(horizontal=16, vertical=4),
+            border_radius=14,
+            bgcolor=bg_color,
+            border=ft.Border.all(1.5, border_color),
+            shadow=ft.BoxShadow(
+                spread_radius=0, blur_radius=6,
+                color=ft.Colors.with_opacity(0.04, ft.Colors.BLACK),
+                offset=ft.Offset(0, 2),
+            ),
+            on_click=on_toggle,
+        )
+
+    def _daily_add_button(self) -> ft.Container:
+        """添加日常任务按钮"""
+        accent = "#667eea"
+
+        def on_add(e):
+            self._show_daily_add_dialog()
+
+        return ft.Container(
+            content=ft.Row([
+                ft.Icon(ft.Icons.ADD_CIRCLE_OUTLINE, color=accent, size=20),
+                ft.Text(
+                    "添加日常任务",
+                    size=14, color=accent, weight=ft.FontWeight.W_500,
+                ),
+            ], alignment=ft.MainAxisAlignment.CENTER),
+            padding=14, margin=ft.Margin.symmetric(horizontal=16, vertical=8),
+            border=ft.Border.all(1.5, ft.Colors.with_opacity(0.35, accent)),
+            border_radius=14,
+            on_click=on_add,
+        )
+
+    def _show_daily_add_dialog(self):
+        """显示添加日常任务对话框"""
+        name_field = ft.TextField(
+            label="任务名称", autofocus=True,
+            border_radius=10,
+            prefix_icon=ft.Icons.EDIT_NOTE,
+        )
+        category_dd = ft.Dropdown(
+            label="分类", value="main",
+            border_radius=10,
+            options=[
+                ft.dropdown.Option("main", "主线任务"),
+                ft.dropdown.Option("side", "支线任务"),
+            ],
+        )
+        priority_dd = ft.Dropdown(
+            label="优先级", value="medium",
+            border_radius=10,
+            options=[
+                ft.dropdown.Option("high", "高"),
+                ft.dropdown.Option("medium", "中"),
+                ft.dropdown.Option("low", "低"),
+            ],
+        )
+        notes_field = ft.TextField(
+            label="备注（可选）",
+            border_radius=10,
+            prefix_icon=ft.Icons.NOTES,
+            multiline=True,
+            min_lines=1,
+            max_lines=3,
+        )
+
+        def on_save(e):
+            name = name_field.value.strip()
+            if not name:
+                return
+            self.daily_svc.create_daily_task(
+                name=name,
+                category=category_dd.value,
+                priority=priority_dd.value,
+                notes=notes_field.value.strip() or None,
+            )
+            dlg.open = False
+            self._page.update()
+            self._refresh()
+
+        dlg = ft.AlertDialog(
+            title=ft.Row([
+                ft.Icon(ft.Icons.ADD_TASK, color="#667eea", size=24),
+                ft.Text("添加日常任务", size=18, weight=ft.FontWeight.W_600),
+            ], spacing=8),
+            content=ft.Column([
+                name_field,
+                ft.Container(height=4),
+                ft.Row([category_dd, priority_dd], spacing=10),
+                ft.Container(height=4),
+                notes_field,
+            ], tight=True, spacing=8, width=300),
+            actions=[
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.Button(
+                    "保存",
+                    on_click=on_save,
+                    bgcolor="#667eea",
+                    color="white",
+                    style=ft.ButtonStyle(
+                        shape=ft.RoundedRectangleBorder(radius=10),
+                    ),
+                ),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        self._page.show_dialog(dlg)
 
     # ─── 统计 Tab ───────────────────────────────────────────
     def _stats_tab(self) -> ft.Column:

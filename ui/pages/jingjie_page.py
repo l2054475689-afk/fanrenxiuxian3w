@@ -1,9 +1,10 @@
 """
-境界系统页面 — 美化版 v2
+境界系统页面 — 美化版 v3
+需求1：主境界晋升 + 副本成就达成，分区显示
 """
 import flet as ft
 from services.realm_service import RealmService
-from services.constants import Colors as C
+from services.constants import Colors as C, REALM_TYPE_MAIN, REALM_TYPE_DUNGEON
 from ui.styles import card_container, gradient_card, section_title
 
 
@@ -17,43 +18,40 @@ class JingjiePage(ft.Column):
         self.spacing = 0
         self.scroll = ft.ScrollMode.AUTO
         self.expand = True
-        self._expanded_skills: set = set()  # 展开的技能 id
+        self._expanded_skills: set = set()
 
-    # ── colours ──────────────────────────────────────────
     _GOLD_START = "#f6d365"
     _GOLD_END   = "#fda085"
     _DUNGEON_START = "#a18cd1"
     _DUNGEON_END   = "#fbc2eb"
 
-    # ── build ────────────────────────────────────────────
     def build(self):
         main_realm = self.svc.get_active_main_realm()
         dungeon = self.svc.get_active_dungeon()
 
         self.controls = [
-            # ── 页面标题 ──
             ft.Container(
                 content=ft.Row([
                     ft.Text("🏔️", size=24),
-                    ft.Text("境界", size=22, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
+                    ft.Text("当前境界", size=22, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
                 ], spacing=8),
                 padding=ft.Padding.only(left=20, top=20, bottom=12),
             ),
         ]
 
-        # ── 主境界 ──
+        # ── 主境界区域 ──
         if main_realm:
             self.controls.append(self._realm_hero_card(main_realm))
             self.controls.append(self._realm_skill_tree(main_realm))
         else:
             self.controls.append(self._empty_realm("主境界"))
 
-        # ── 副本 ──
+        # ── 副本挑战区域 ──
         self.controls.append(
             ft.Container(
                 content=ft.Row([
                     ft.Text("🗺️", size=18),
-                    ft.Text("副本", size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
+                    ft.Text("副本挑战", size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
                 ], spacing=6),
                 padding=ft.Padding.only(left=20, top=20, bottom=6),
             )
@@ -64,20 +62,35 @@ class JingjiePage(ft.Column):
         else:
             self.controls.append(self._create_realm_button("dungeon"))
 
-        # ── 已完成 ──
-        completed = self.svc.get_completed_realms()
-        if completed:
+        # ── 已完成境界（主境界） ──
+        completed_main = self.svc.get_completed_realms(realm_type=REALM_TYPE_MAIN)
+        if completed_main:
             self.controls.append(
                 ft.Container(
                     content=ft.Row([
-                        ft.Text("🏆", size=18),
-                        ft.Text("已完成", size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
+                        ft.Text("🎉", size=18),
+                        ft.Text("已完成境界", size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
                     ], spacing=6),
                     padding=ft.Padding.only(left=20, top=20, bottom=6),
                 )
             )
-            for r in completed:
+            for r in completed_main:
                 self.controls.append(self._completed_realm_card(r))
+
+        # ── 已完成成就（副本） ──
+        completed_dungeon = self.svc.get_completed_realms(realm_type=REALM_TYPE_DUNGEON)
+        if completed_dungeon:
+            self.controls.append(
+                ft.Container(
+                    content=ft.Row([
+                        ft.Text("🏆", size=18),
+                        ft.Text("已完成成就", size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
+                    ], spacing=6),
+                    padding=ft.Padding.only(left=20, top=20, bottom=6),
+                )
+            )
+            for r in completed_dungeon:
+                self.controls.append(self._completed_achievement_card(r))
 
         self.controls.append(ft.Container(height=80))
 
@@ -88,7 +101,6 @@ class JingjiePage(ft.Column):
 
         return ft.Container(
             content=ft.Column([
-                # 顶部：图标 + 名称 + 百分比
                 ft.Row([
                     ft.Container(
                         content=ft.Text("🏔️", size=32),
@@ -109,7 +121,6 @@ class JingjiePage(ft.Column):
                         padding=ft.Padding.all(8),
                     ),
                 ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                # 进度条
                 ft.Container(
                     content=ft.ProgressBar(
                         value=pct / 100, height=8,
@@ -196,12 +207,10 @@ class JingjiePage(ft.Column):
         for skill in progress.get("skills", []):
             items.append(self._skill_card(skill, realm["id"], is_dungeon))
 
-        # 添加技能按钮
         items.append(self._add_skill_button(realm["id"]))
 
-        # 晋升按钮
         if progress["overall_progress"] >= realm.get("completion_rate", 100):
-            items.append(self._advance_button(realm["id"]))
+            items.append(self._advance_button(realm["id"], is_dungeon))
 
         return ft.Column(items, spacing=0)
 
@@ -213,7 +222,6 @@ class JingjiePage(ft.Column):
         is_expanded = skill["id"] in self._expanded_skills
         accent = self._DUNGEON_START if is_dungeon else C.PRIMARY
 
-        # ── 子任务列表 ──
         sub_items = []
         if is_expanded:
             for st in sub_tasks:
@@ -224,7 +232,8 @@ class JingjiePage(ft.Column):
                         else:
                             result = self.svc.complete_sub_task(st_id)
                             if result.get("realm_ready_to_advance"):
-                                _sb = ft.SnackBar(ft.Text("🎉 所有任务完成！可以晋升了"), bgcolor=C.SUCCESS)
+                                msg = "🏆 所有任务完成！可以达成成就了" if is_dungeon else "🎉 所有任务完成！可以晋升了"
+                                _sb = ft.SnackBar(ft.Text(msg), bgcolor=C.SUCCESS)
                                 _sb.open = True
                                 self._page.overlay.append(_sb)
                                 self._page.update()
@@ -237,9 +246,7 @@ class JingjiePage(ft.Column):
                             ft.Checkbox(
                                 value=st["is_completed"],
                                 on_change=make_toggle(),
-                                fill_color={
-                                    ft.ControlState.SELECTED: C.SUCCESS,
-                                },
+                                fill_color={ft.ControlState.SELECTED: C.SUCCESS},
                             ),
                             ft.Text(
                                 st["name"], size=14,
@@ -257,7 +264,6 @@ class JingjiePage(ft.Column):
                     )
                 )
 
-            # 添加子任务按钮
             sub_items.append(
                 ft.Container(
                     content=ft.Row([
@@ -269,7 +275,6 @@ class JingjiePage(ft.Column):
                 )
             )
 
-        # ── 技能头部 ──
         def toggle_expand(e, sid=skill["id"]):
             if sid in self._expanded_skills:
                 self._expanded_skills.discard(sid)
@@ -346,9 +351,7 @@ class JingjiePage(ft.Column):
                     content=ft.Text(f"创建{label}", size=15, weight=ft.FontWeight.W_600, color="white"),
                     padding=ft.Padding.symmetric(horizontal=28, vertical=12),
                     border_radius=24,
-                    gradient=ft.LinearGradient(
-                        colors=[C.PRIMARY, C.PRIMARY_DARK],
-                    ),
+                    gradient=ft.LinearGradient(colors=[C.PRIMARY, C.PRIMARY_DARK]),
                     on_click=lambda e: self._show_create_realm(realm_type),
                 ),
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=4),
@@ -363,7 +366,6 @@ class JingjiePage(ft.Column):
             ),
         )
 
-    # ── 创建副本按钮 ─────────────────────────────────────
     def _create_realm_button(self, realm_type: str) -> ft.Container:
         label = "创建副本" if realm_type == "dungeon" else "创建境界"
         return ft.Container(
@@ -378,7 +380,6 @@ class JingjiePage(ft.Column):
             on_click=lambda e: self._show_create_realm(realm_type),
         )
 
-    # ── 添加技能按钮 ─────────────────────────────────────
     def _add_skill_button(self, realm_id: int) -> ft.Container:
         return ft.Container(
             content=ft.Row([
@@ -392,8 +393,8 @@ class JingjiePage(ft.Column):
             on_click=lambda e: self._show_add_skill(realm_id),
         )
 
-    # ── 晋升按钮（金色渐变） ─────────────────────────────
-    def _advance_button(self, realm_id: int) -> ft.Container:
+    # ── 晋升/成就按钮 ────────────────────────────────────
+    def _advance_button(self, realm_id: int, is_dungeon: bool = False) -> ft.Container:
         def on_advance(e):
             result = self.svc.advance_realm(realm_id)
             if result["success"]:
@@ -408,22 +409,35 @@ class JingjiePage(ft.Column):
                 self._page.update()
             self._refresh()
 
+        if is_dungeon:
+            btn_emoji = "🏆"
+            btn_text = "成就达成"
+            btn_text_color = "#4a148c"
+            grad_colors = [self._DUNGEON_START, self._DUNGEON_END]
+            glow_color = self._DUNGEON_START
+        else:
+            btn_emoji = "🎉"
+            btn_text = "境界晋升"
+            btn_text_color = "#5d4037"
+            grad_colors = [self._GOLD_START, self._GOLD_END]
+            glow_color = self._GOLD_START
+
         return ft.Container(
             content=ft.Container(
                 content=ft.Row([
-                    ft.Text("🎉", size=22),
-                    ft.Text("境界晋升", size=18, weight=ft.FontWeight.BOLD, color="#5d4037"),
+                    ft.Text(btn_emoji, size=22),
+                    ft.Text(btn_text, size=18, weight=ft.FontWeight.BOLD, color=btn_text_color),
                 ], alignment=ft.MainAxisAlignment.CENTER, spacing=8),
                 padding=ft.Padding.symmetric(horizontal=32, vertical=14),
                 border_radius=28,
                 gradient=ft.LinearGradient(
                     begin=ft.Alignment.CENTER_LEFT,
                     end=ft.Alignment.CENTER_RIGHT,
-                    colors=[self._GOLD_START, self._GOLD_END],
+                    colors=grad_colors,
                 ),
                 shadow=ft.BoxShadow(
                     spread_radius=0, blur_radius=16,
-                    color=ft.Colors.with_opacity(0.35, self._GOLD_START),
+                    color=ft.Colors.with_opacity(0.35, glow_color),
                     offset=ft.Offset(0, 4),
                 ),
                 on_click=on_advance,
@@ -432,7 +446,7 @@ class JingjiePage(ft.Column):
             padding=ft.Padding.symmetric(vertical=16),
         )
 
-    # ── 已完成境界卡片 ───────────────────────────────────
+    # ── 已完成境界卡片（主境界） ──────────────────────────
     def _completed_realm_card(self, realm: dict) -> ft.Container:
         return ft.Container(
             content=ft.Row([
@@ -446,7 +460,7 @@ class JingjiePage(ft.Column):
                 ft.Column([
                     ft.Text(realm["name"], size=15, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
                     ft.Text(
-                        f"完成于 {str(realm['completed_at'])[:10]}",
+                        f"晋升于 {str(realm['completed_at'])[:10]}",
                         size=12, color=C.TEXT_HINT,
                     ),
                 ], spacing=2, expand=True),
@@ -456,6 +470,38 @@ class JingjiePage(ft.Column):
             margin=ft.Margin.symmetric(horizontal=16, vertical=3),
             border_radius=12,
             bgcolor=C.CARD_LIGHT,
+            shadow=ft.BoxShadow(
+                spread_radius=0, blur_radius=6,
+                color=ft.Colors.with_opacity(0.04, ft.Colors.BLACK),
+                offset=ft.Offset(0, 2),
+            ),
+        )
+
+    # ── 已完成成就卡片（副本） ────────────────────────────
+    def _completed_achievement_card(self, realm: dict) -> ft.Container:
+        return ft.Container(
+            content=ft.Row([
+                ft.Container(
+                    content=ft.Text("🏆", size=18),
+                    width=40, height=40,
+                    border_radius=20,
+                    bgcolor=ft.Colors.with_opacity(0.1, self._DUNGEON_START),
+                    alignment=ft.Alignment.CENTER,
+                ),
+                ft.Column([
+                    ft.Text(realm["name"], size=15, weight=ft.FontWeight.W_500, color=C.TEXT_PRIMARY),
+                    ft.Text(
+                        f"达成于 {str(realm['completed_at'])[:10]}",
+                        size=12, color=C.TEXT_HINT,
+                    ),
+                ], spacing=2, expand=True),
+                ft.Icon(ft.Icons.STAR, color=self._DUNGEON_START, size=22),
+            ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+            padding=14,
+            margin=ft.Margin.symmetric(horizontal=16, vertical=3),
+            border_radius=12,
+            bgcolor=C.CARD_LIGHT,
+            border=ft.Border.only(left=ft.BorderSide(3, self._DUNGEON_START)),
             shadow=ft.BoxShadow(
                 spread_radius=0, blur_radius=6,
                 color=ft.Colors.with_opacity(0.04, ft.Colors.BLACK),

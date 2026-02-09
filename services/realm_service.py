@@ -42,13 +42,14 @@ class RealmService:
         """获取当前副本境界"""
         return self.db.get_active_realm(REALM_TYPE_DUNGEON)
 
-    def get_completed_realms(self) -> list[dict]:
-        """获取已完成的境界列表"""
+    def get_completed_realms(self, realm_type: str = None) -> list[dict]:
+        """获取已完成的境界列表，可按类型过滤"""
         with self.db.session_scope() as s:
             from database.models import Realm
-            realms = s.query(Realm).filter(
-                Realm.status == "completed"
-            ).order_by(Realm.completed_at.desc()).all()
+            q = s.query(Realm).filter(Realm.status == "completed")
+            if realm_type:
+                q = q.filter(Realm.realm_type == realm_type)
+            realms = q.order_by(Realm.completed_at.desc()).all()
             return [self.db._realm_to_dict(r) for r in realms]
 
     # === 技能/大任务管理 ===
@@ -169,7 +170,7 @@ class RealmService:
                     "current_progress": avg_progress,
                 }
 
-            # 执行晋升
+            # 执行晋升/成就达成
             realm.status = "completed"
             realm.completed_at = datetime.now()
 
@@ -183,10 +184,17 @@ class RealmService:
                     config.current_spirit = clamp_spirit(config.current_spirit + realm.reward_spirit)
                     reward_msg = f"，心境+{realm.reward_spirit}"
 
+            # 根据 realm_type 区分提示文案
+            if realm.realm_type == REALM_TYPE_DUNGEON:
+                message = f"🏆 成就达成！「{realm.name}」挑战完成{reward_msg}"
+            else:
+                message = f"🎉 恭喜晋升！「{realm.name}」圆满{reward_msg}"
+
             return {
                 "success": True,
-                "message": f"🎉 恭喜！「{realm.name}」圆满{reward_msg}",
+                "message": message,
                 "realm_name": realm.name,
+                "realm_type": realm.realm_type,
                 "completion_time": str(realm.completed_at),
             }
 

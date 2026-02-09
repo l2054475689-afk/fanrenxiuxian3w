@@ -305,6 +305,29 @@ class RelationshipEvent(Base):
     )
 
 
+# ============ 日常任务系统 ============
+
+class DailyTask(Base):
+    """日常任务表 — 心境页面的日常任务 Tab"""
+    __tablename__ = "daily_tasks"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(200), nullable=False)
+    category = Column(String(20), default="main")       # main=主线 / side=支线
+    priority = Column(String(10), default="medium")      # high/medium/low
+    deadline = Column(DateTime, nullable=True)
+    notes = Column(Text, nullable=True)
+    is_completed = Column(Boolean, default=False)
+    completed_at = Column(DateTime, nullable=True)
+    created_date = Column(Date, default=date.today)      # 创建日期，用于按天分组
+    created_at = Column(DateTime, default=datetime.now)
+
+    __table_args__ = (
+        Index("idx_daily_task_date", "created_date"),
+        Index("idx_daily_task_category", "category"),
+    )
+
+
 # ============ AI 配置 ============
 
 class AIConfig(Base):

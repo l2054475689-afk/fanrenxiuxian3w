@@ -10,6 +10,7 @@ from services.realm_service import RealmService
 from services.lingshi_service import LingshiService
 from services.tongyu_service import TongyuService
 from services.panel_service import PanelService
+from services.daily_task_service import DailyTaskService
 from services.constants import Colors as C
 
 from ui.styles import (
@@ -49,15 +50,16 @@ def main(page: ft.Page):
     lingshi_svc = LingshiService(db)
     tongyu_svc = TongyuService(db)
     panel_svc = PanelService(db)
+    daily_task_svc = DailyTaskService(db)
 
     # 检查是否首次启动
     config = db.get_user_config()
     if not config:
         _show_onboarding(page, db, lambda: _show_main(
-            page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc
+            page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc
         ))
     else:
-        _show_main(page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc)
+        _show_main(page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc)
 
 
 def _show_onboarding(page: ft.Page, db: DatabaseManager, on_complete):
@@ -196,7 +198,7 @@ def _show_onboarding(page: ft.Page, db: DatabaseManager, on_complete):
     )
 
 
-def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc):
+def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc, panel_svc, daily_task_svc):
     """显示主界面"""
     # 页面容器
     content_area = ft.Container(expand=True)
@@ -209,7 +211,7 @@ def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc
             if index == 0:
                 pages[index] = PanelPage(page, panel_svc)
             elif index == 1:
-                pages[index] = XinjingPage(page, spirit_svc)
+                pages[index] = XinjingPage(page, spirit_svc, daily_task_svc)
             elif index == 2:
                 pages[index] = JingjiePage(page, realm_svc)
             elif index == 3:

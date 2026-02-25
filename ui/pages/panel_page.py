@@ -168,12 +168,12 @@ class PanelPage(ft.Column):
         return ft.Container(content=self._seconds_text)
 
     def _start_seconds_timer(self):
-        """每秒递减血量秒数"""
-        import threading
-        def tick():
+        """每秒递减血量秒数，用 page.run_task 确保 UI 更新"""
+        import asyncio
+
+        async def tick():
             while self._timer_running and self._blood_seconds > 0:
-                import time
-                time.sleep(1)
+                await asyncio.sleep(1)
                 self._blood_seconds -= 1
                 if self._seconds_text:
                     self._seconds_text.value = f"⏱ {self._blood_seconds:,} 秒"
@@ -182,8 +182,26 @@ class PanelPage(ft.Column):
                     except Exception:
                         self._timer_running = False
                         break
-        t = threading.Thread(target=tick, daemon=True)
-        t.start()
+
+        try:
+            self._page.run_task(tick)
+        except Exception:
+            # fallback: 用线程
+            import threading
+            def tick_sync():
+                import time
+                while self._timer_running and self._blood_seconds > 0:
+                    time.sleep(1)
+                    self._blood_seconds -= 1
+                    if self._seconds_text:
+                        self._seconds_text.value = f"⏱ {self._blood_seconds:,} 秒"
+                        try:
+                            self._seconds_text.update()
+                        except Exception:
+                            self._timer_running = False
+                            break
+            t = threading.Thread(target=tick_sync, daemon=True)
+            t.start()
 
     # ─── 心境迷你卡 ─────────────────────────────────────────
     def _spirit_mini_card(self, spirit: dict) -> ft.Container:

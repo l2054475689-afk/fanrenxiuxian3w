@@ -371,15 +371,28 @@ class LingshiPage(ft.Column):
     def _debt_section(self) -> ft.Column:
         summary = self.svc.get_debt_summary()
         if summary["total_debts"] == 0:
-            return ft.Container(
-                content=ft.Column([
-                    ft.Text("🎉", size=32),
-                    ft.Text("无负债，自由自在！", size=14, color=C.TEXT_HINT),
-                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
-                padding=24,
-                margin=ft.Margin.symmetric(horizontal=16),
-                alignment=ft.Alignment.CENTER,
-            )
+            return ft.Column([
+                ft.Container(
+                    content=ft.Column([
+                        ft.Text("🎉", size=32),
+                        ft.Text("无负债，自由自在！", size=14, color=C.TEXT_HINT),
+                    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
+                    padding=24,
+                    margin=ft.Margin.symmetric(horizontal=16),
+                    alignment=ft.Alignment.CENTER,
+                ),
+                ft.Container(
+                    content=ft.Row([
+                        ft.Icon(ft.Icons.ADD_CIRCLE_OUTLINE, color=C.ERROR, size=20),
+                        ft.Text("添加负债", size=14, weight=ft.FontWeight.W_500, color=C.ERROR),
+                    ], alignment=ft.MainAxisAlignment.CENTER, spacing=6),
+                    padding=14,
+                    margin=ft.Margin.symmetric(horizontal=16, vertical=8),
+                    border=ft.Border.all(1.5, ft.Colors.with_opacity(0.35, C.ERROR)),
+                    border_radius=12,
+                    on_click=lambda e: self._show_add_debt(),
+                ),
+            ], spacing=0)
 
         items = []
         for d in summary["debts"]:
@@ -465,6 +478,21 @@ class LingshiPage(ft.Column):
                     color=ft.Colors.with_opacity(0.06, ft.Colors.BLACK),
                     offset=ft.Offset(0, 2),
                 ),
+            )
+        )
+
+        # 添加负债按钮
+        items.append(
+            ft.Container(
+                content=ft.Row([
+                    ft.Icon(ft.Icons.ADD_CIRCLE_OUTLINE, color=C.ERROR, size=20),
+                    ft.Text("添加负债", size=14, weight=ft.FontWeight.W_500, color=C.ERROR),
+                ], alignment=ft.MainAxisAlignment.CENTER, spacing=6),
+                padding=14,
+                margin=ft.Margin.symmetric(horizontal=16, vertical=8),
+                border=ft.Border.all(1.5, ft.Colors.with_opacity(0.35, C.ERROR)),
+                border_radius=12,
+                on_click=lambda e: self._show_add_debt(),
             )
         )
 
@@ -565,6 +593,45 @@ class LingshiPage(ft.Column):
             actions=[
                 ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("删除", on_click=on_confirm, style=ft.ButtonStyle(color=C.ERROR)),
+            ],
+        )
+        self._page.show_dialog(dlg)
+
+    def _show_add_debt(self):
+        """添加负债对话框"""
+        name_field = ft.TextField(label="负债名称（如房贷、车贷）", autofocus=True)
+        total_field = ft.TextField(label="总金额", keyboard_type=ft.KeyboardType.NUMBER)
+        monthly_field = ft.TextField(label="月供金额", keyboard_type=ft.KeyboardType.NUMBER)
+        rate_field = ft.TextField(label="年利率%（可选）", keyboard_type=ft.KeyboardType.NUMBER, value="0")
+
+        def on_save(e):
+            name = name_field.value.strip()
+            if not name:
+                return
+            try:
+                total = float(total_field.value)
+                monthly = float(monthly_field.value)
+                rate = float(rate_field.value or "0")
+            except ValueError:
+                return
+            if total <= 0 or monthly <= 0:
+                return
+            result = self.svc.create_debt(name, total, monthly, rate)
+            dlg.open = False
+            self._page.update()
+            if result["success"]:
+                _sb = ft.SnackBar(ft.Text(f"已添加负债「{name}」"), bgcolor=C.SUCCESS)
+                _sb.open = True
+                self._page.overlay.append(_sb)
+                self._page.update()
+            self._refresh()
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("添加负债"),
+            content=ft.Column([name_field, total_field, monthly_field, rate_field], tight=True, spacing=8),
+            actions=[
+                ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
+                ft.TextButton("添加", on_click=on_save),
             ],
         )
         self._page.show_dialog(dlg)

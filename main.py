@@ -214,7 +214,7 @@ def _show_main(page: ft.Page, db, spirit_svc, realm_svc, lingshi_svc, tongyu_svc
     def get_page(index: int):
         if index not in pages:
             if index == 0:
-                pages[index] = PanelPage(page, panel_svc)
+                pages[index] = PanelPage(page, panel_svc, kline_svc)
             elif index == 1:
                 pages[index] = XinjingPage(page, spirit_svc, daily_task_svc, kline_svc)
             elif index == 2:

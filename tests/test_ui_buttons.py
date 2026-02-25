@@ -14,6 +14,8 @@ from services.realm_service import RealmService
 from services.lingshi_service import LingshiService
 from services.tongyu_service import TongyuService
 from services.panel_service import PanelService
+from services.daily_task_service import DailyTaskService
+from services.kline_service import KlineService
 
 
 class MockPage:
@@ -45,6 +47,10 @@ class MockPage:
 
     def add(self, *controls):
         self.controls.extend(controls)
+
+    def show_dialog(self, dialog):
+        """模拟显示对话框"""
+        self._dialogs.append(dialog)
 
     @property
     def last_dialog(self):
@@ -97,7 +103,8 @@ class TestPanelPageUI:
         realm.add_skill(1, "打坐", "")
 
         svc = PanelService(db)
-        p = PanelPage(page, svc)
+        kline_svc = KlineService(db)
+        p = PanelPage(page, svc, kline_svc)
         result = p.build()
         assert p is not None
 
@@ -109,7 +116,9 @@ class TestXinjingPageUI:
     def test_build(self, db, page):
         from ui.pages.xinjing_page import XinjingPage
         svc = SpiritService(db)
-        p = XinjingPage(page, svc)
+        daily_svc = DailyTaskService(db)
+        kline_svc = KlineService(db)
+        p = XinjingPage(page, svc, daily_svc, kline_svc)
         p.build()
         assert p is not None
 
@@ -117,8 +126,10 @@ class TestXinjingPageUI:
         """点击完成任务按钮"""
         from ui.pages.xinjing_page import XinjingPage
         svc = SpiritService(db)
+        daily_svc = DailyTaskService(db)
+        kline_svc = KlineService(db)
         svc.create_positive_task("冥想", 10, 5)
-        p = XinjingPage(page, svc)
+        p = XinjingPage(page, svc, daily_svc, kline_svc)
         p.build()
         # 直接调用 service 完成（模拟按钮回调的效果）
         result = svc.complete_daily_task(1)
@@ -129,8 +140,10 @@ class TestXinjingPageUI:
         """点击心魔按钮"""
         from ui.pages.xinjing_page import XinjingPage
         svc = SpiritService(db)
+        daily_svc = DailyTaskService(db)
+        kline_svc = KlineService(db)
         svc.create_demon_task("刷手机", 15, 10)
-        p = XinjingPage(page, svc)
+        p = XinjingPage(page, svc, daily_svc, kline_svc)
         p.build()
         result = svc.record_demon(1)
         assert result["success"]
@@ -140,7 +153,9 @@ class TestXinjingPageUI:
         """打开添加任务对话框"""
         from ui.pages.xinjing_page import XinjingPage
         svc = SpiritService(db)
-        p = XinjingPage(page, svc)
+        daily_svc = DailyTaskService(db)
+        kline_svc = KlineService(db)
+        p = XinjingPage(page, svc, daily_svc, kline_svc)
         p.build()
         p._show_add_dialog("positive")
         assert page.last_dialog is not None
@@ -149,7 +164,9 @@ class TestXinjingPageUI:
         """打开添加心魔对话框"""
         from ui.pages.xinjing_page import XinjingPage
         svc = SpiritService(db)
-        p = XinjingPage(page, svc)
+        daily_svc = DailyTaskService(db)
+        kline_svc = KlineService(db)
+        p = XinjingPage(page, svc, daily_svc, kline_svc)
         p.build()
         p._show_add_dialog("demon")
         assert page.last_dialog is not None
@@ -158,7 +175,9 @@ class TestXinjingPageUI:
         """切换 Tab（正面/心魔/统计）"""
         from ui.pages.xinjing_page import XinjingPage
         svc = SpiritService(db)
-        p = XinjingPage(page, svc)
+        daily_svc = DailyTaskService(db)
+        kline_svc = KlineService(db)
+        p = XinjingPage(page, svc, daily_svc, kline_svc)
         p.build()
         # 切换到心魔 tab
         p.current_tab = 1
@@ -171,12 +190,14 @@ class TestXinjingPageUI:
         """有任务数据时构建"""
         from ui.pages.xinjing_page import XinjingPage
         svc = SpiritService(db)
+        daily_svc = DailyTaskService(db)
+        kline_svc = KlineService(db)
         svc.create_positive_task("冥想", 10, 5)
         svc.create_positive_task("运动", 15, 8)
         svc.create_demon_task("刷手机", 15, 10)
         svc.complete_daily_task(1)
         svc.record_demon(3)
-        p = XinjingPage(page, svc)
+        p = XinjingPage(page, svc, daily_svc, kline_svc)
         p.build()
         assert p is not None
 
@@ -499,8 +520,8 @@ class TestSettingsPageUI:
         p = SettingsPage(page, db)
         p.build()
         p._backup()
-        # 应该弹出提示
-        assert len(page._dialogs) > 0
+        # 应该弹出 SnackBar 提示
+        assert len(page.overlay) > 0
 
     def test_confirm_reset(self, db, page):
         """重置确认按钮"""
@@ -540,7 +561,9 @@ class TestMainUI:
         lingshi = LingshiService(db)
         tongyu = TongyuService(db)
         panel = PanelService(db)
-        _show_main(page, db, spirit, realm, lingshi, tongyu, panel)
+        daily_task_svc = DailyTaskService(db)
+        kline_svc = KlineService(db)
+        _show_main(page, db, spirit, realm, lingshi, tongyu, panel, daily_task_svc, kline_svc)
         assert len(page.controls) > 0
         os.unlink(f.name)
 

@@ -68,7 +68,7 @@ class TongyuPage(ft.Column):
                 content=ft.Row([
                     self._stat_card("👥", str(stats["total_people"]), "总人数", "#e3f2fd"),
                     self._stat_card("💬", str(stats["monthly_interactions"]), "本月互动", "#e8f5e9"),
-                    self._stat_card("⚠️", str(stats["neglected"]), "需关注", "#fff3e0"),
+                    self._stat_card("🎂", str(len(self.svc.get_upcoming_birthdays())), "近期生日", "#fff3e0"),
                 ], alignment=ft.MainAxisAlignment.SPACE_EVENLY),
                 padding=ft.Padding.symmetric(horizontal=12),
             ),
@@ -192,8 +192,8 @@ class TongyuPage(ft.Column):
             # ── 基本信息 ──
             ft.Container(
                 content=ft.Row([
-                    self._info_chip("📅", "认识", detail["met_date"] or "未记录"),
                     self._info_chip("🎂", "生日", detail["birthday"] or "未记录"),
+                    self._info_chip("🧠", "性格", detail.get("personality") or "未记录"),
                 ], alignment=ft.MainAxisAlignment.SPACE_EVENLY),
                 padding=ft.Padding.symmetric(horizontal=16, vertical=4),
             ),
@@ -399,13 +399,16 @@ class TongyuPage(ft.Column):
                 )
             )
 
+        is_completed = event.get("is_completed", False)
+        dot_color = C.SUCCESS if is_completed else C.PRIMARY
+
         return ft.Container(
             content=ft.Row([
                 # 时间线竖线 + 圆点
                 ft.Column([
                     ft.Container(
                         width=10, height=10, border_radius=5,
-                        bgcolor=C.PRIMARY,
+                        bgcolor=dot_color,
                     ),
                     ft.Container(
                         width=2, height=60,
@@ -416,7 +419,18 @@ class TongyuPage(ft.Column):
                 ft.Container(
                     content=ft.Column([
                         ft.Row([
-                            ft.Text(f"📅 {event['event_date']}", size=12, color=C.TEXT_HINT, expand=True),
+                            ft.Text(f"📅 {event['event_date']}", size=12, color=C.TEXT_HINT),
+                            ft.Container(
+                                content=ft.Text(
+                                    "✅ 已完成" if is_completed else "⏳ 进行中",
+                                    size=10, color=C.SUCCESS if is_completed else C.WARNING,
+                                ),
+                                padding=ft.Padding.symmetric(horizontal=6, vertical=2),
+                                border_radius=8,
+                                bgcolor=ft.Colors.with_opacity(0.1, C.SUCCESS if is_completed else C.WARNING),
+                                on_click=lambda e, eid=event["id"]: self._toggle_event_completed(eid),
+                            ),
+                            ft.Container(expand=True),
                             ft.IconButton(
                                 icon=ft.Icons.CLOSE, icon_size=14,
                                 icon_color=C.TEXT_HINT,
@@ -424,7 +438,11 @@ class TongyuPage(ft.Column):
                                 style=ft.ButtonStyle(padding=0),
                             ),
                         ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                        ft.Text(event["event_description"], size=14, color=C.TEXT_PRIMARY),
+                        ft.Text(
+                            event["event_description"], size=14,
+                            color=C.TEXT_HINT if is_completed else C.TEXT_PRIMARY,
+                            style=ft.TextStyle(decoration=ft.TextDecoration.LINE_THROUGH) if is_completed else None,
+                        ),
                         ft.Row(tag_chips, spacing=4) if tag_chips else ft.Container(),
                         ft.Text(
                             event.get("key_info") or "",
@@ -456,12 +474,24 @@ class TongyuPage(ft.Column):
             label="关系类型", value=RELATIONSHIP_TYPES[0],
             options=[ft.dropdown.Option(t) for t in RELATIONSHIP_TYPES],
         )
+        personality_field = ft.TextField(label="性格描述（可选）")
+        birthday_field = ft.TextField(label="生日（可选，格式：2000-01-01）")
 
         def on_save(e):
             name = name_field.value.strip()
             if not name:
                 return
-            result = self.svc.create_person(name, type_dd.value)
+            birthday = None
+            if birthday_field.value.strip():
+                try:
+                    birthday = date.fromisoformat(birthday_field.value.strip())
+                except ValueError:
+                    pass
+            result = self.svc.create_person(
+                name, type_dd.value,
+                birthday=birthday,
+                personality=personality_field.value.strip() or None,
+            )
             dlg.open = False
             self._page.update()
             if result["success"]:
@@ -473,7 +503,7 @@ class TongyuPage(ft.Column):
 
         dlg = ft.AlertDialog(
             title=ft.Text("添加人物"),
-            content=ft.Column([name_field, type_dd], tight=True, spacing=8),
+            content=ft.Column([name_field, type_dd, personality_field, birthday_field], tight=True, spacing=8),
             actions=[
                 ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("添加", on_click=on_save),
@@ -485,6 +515,7 @@ class TongyuPage(ft.Column):
         desc_field = ft.TextField(label="事件描述", autofocus=True, multiline=True)
         location_field = ft.TextField(label="地点（可选）")
         key_info_field = ft.TextField(label="关键信息（可选）", multiline=True)
+        completed_cb = ft.Checkbox(label="已完成", value=False)
 
         def on_save(e):
             desc = desc_field.value.strip()
@@ -494,6 +525,7 @@ class TongyuPage(ft.Column):
                 self._selected_person_id, date.today(), desc,
                 location=location_field.value,
                 key_info=key_info_field.value,
+                is_completed=completed_cb.value,
             )
             dlg.open = False
             self._page.update()
@@ -506,7 +538,7 @@ class TongyuPage(ft.Column):
 
         dlg = ft.AlertDialog(
             title=ft.Text("记录事件"),
-            content=ft.Column([desc_field, location_field, key_info_field], tight=True, spacing=8),
+            content=ft.Column([desc_field, location_field, key_info_field, completed_cb], tight=True, spacing=8),
             actions=[
                 ft.TextButton("取消", on_click=lambda e: (setattr(dlg, "open", False), self._page.update())),
                 ft.TextButton("保存", on_click=on_save),
@@ -580,6 +612,11 @@ class TongyuPage(ft.Column):
             ],
         )
         self._page.show_dialog(dlg)
+
+    def _toggle_event_completed(self, event_id: int):
+        """切换事件完成状态"""
+        self.svc.toggle_event_completed(event_id)
+        self._refresh()
 
     def _refresh(self):
         self.controls.clear()

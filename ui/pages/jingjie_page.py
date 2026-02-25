@@ -26,43 +26,54 @@ class JingjiePage(ft.Column):
     _DUNGEON_END   = "#fbc2eb"
 
     def build(self):
-        main_realm = self.svc.get_active_main_realm()
-        dungeon = self.svc.get_active_dungeon()
-
+        self._current_tab = getattr(self, '_current_tab', 0)
+        
         self.controls = [
+            # Tab 切换栏
             ft.Container(
                 content=ft.Row([
-                    ft.Text("🏔️", size=24),
-                    ft.Text("当前境界", size=22, weight=ft.FontWeight.BOLD, color=C.TEXT_PRIMARY),
+                    self._tab_button("🏔️ 主境界", 0),
+                    self._tab_button("🗺️ 副本", 1),
                 ], spacing=8),
-                padding=ft.Padding.only(left=20, top=20, bottom=12),
+                padding=ft.Padding.only(left=16, right=16, top=16, bottom=8),
             ),
         ]
 
-        # ── 主境界区域 ──
+        if self._current_tab == 0:
+            self._build_main_realm_tab()
+        else:
+            self._build_dungeon_tab()
+
+        self.controls.append(ft.Container(height=80))
+
+    def _tab_button(self, label: str, index: int) -> ft.Container:
+        is_active = self._current_tab == index
+        return ft.Container(
+            content=ft.Text(
+                label, size=15, weight=ft.FontWeight.BOLD if is_active else ft.FontWeight.W_500,
+                color="white" if is_active else C.TEXT_SECONDARY,
+            ),
+            padding=ft.Padding.symmetric(horizontal=20, vertical=10),
+            border_radius=20,
+            bgcolor=C.PRIMARY if is_active else ft.Colors.with_opacity(0.08, C.TEXT_HINT),
+            on_click=lambda e, idx=index: self._switch_tab(idx),
+        )
+
+    def _switch_tab(self, index: int):
+        self._current_tab = index
+        self._refresh()
+
+    def _build_main_realm_tab(self):
+        """主境界 Tab"""
+        main_realm = self.svc.get_active_main_realm()
+
         if main_realm:
             self.controls.append(self._realm_hero_card(main_realm))
             self.controls.append(self._realm_skill_tree(main_realm))
         else:
             self.controls.append(self._empty_realm("主境界"))
 
-        # ── 副本挑战区域 ──
-        self.controls.append(
-            ft.Container(
-                content=ft.Row([
-                    ft.Text("🗺️", size=18),
-                    ft.Text("副本挑战", size=18, weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
-                ], spacing=6),
-                padding=ft.Padding.only(left=20, top=20, bottom=6),
-            )
-        )
-        if dungeon:
-            self.controls.append(self._dungeon_hero_card(dungeon))
-            self.controls.append(self._realm_skill_tree(dungeon, is_dungeon=True))
-        else:
-            self.controls.append(self._create_realm_button("dungeon"))
-
-        # ── 已完成境界（主境界） ──
+        # 已完成境界
         completed_main = self.svc.get_completed_realms(realm_type=REALM_TYPE_MAIN)
         if completed_main:
             self.controls.append(
@@ -77,7 +88,19 @@ class JingjiePage(ft.Column):
             for r in completed_main:
                 self.controls.append(self._completed_realm_card(r))
 
-        # ── 已完成成就（副本） ──
+    def _build_dungeon_tab(self):
+        """副本 Tab — 支持多个副本"""
+        dungeons = self.svc.get_active_dungeons()
+
+        if dungeons:
+            for dungeon in dungeons:
+                self.controls.append(self._dungeon_hero_card(dungeon))
+                self.controls.append(self._realm_skill_tree(dungeon, is_dungeon=True))
+        
+        # 添加副本按钮（始终显示）
+        self.controls.append(self._create_realm_button("dungeon"))
+
+        # 已完成成就
         completed_dungeon = self.svc.get_completed_realms(realm_type=REALM_TYPE_DUNGEON)
         if completed_dungeon:
             self.controls.append(
@@ -91,8 +114,6 @@ class JingjiePage(ft.Column):
             )
             for r in completed_dungeon:
                 self.controls.append(self._completed_achievement_card(r))
-
-        self.controls.append(ft.Container(height=80))
 
     # ── 主境界英雄卡 ─────────────────────────────────────
     def _realm_hero_card(self, realm: dict) -> ft.Container:
@@ -119,6 +140,12 @@ class JingjiePage(ft.Column):
                     ft.Container(
                         content=ft.Text(f"{pct:.0f}%", size=22, weight=ft.FontWeight.BOLD, color="white"),
                         padding=ft.Padding.all(8),
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE_OUTLINE, icon_size=20,
+                        icon_color=ft.Colors.with_opacity(0.7, "white"),
+                        on_click=lambda e, rid=realm["id"], rname=realm["name"]: self._confirm_delete_realm(rid, rname),
+                        style=ft.ButtonStyle(padding=0),
                     ),
                 ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
                 ft.Container(

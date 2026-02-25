@@ -252,8 +252,9 @@ class Person(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     relationship_type = Column(String(50), nullable=False)
-    met_date = Column(Date, nullable=True)
+    met_date = Column(Date, nullable=True)                 # 保留字段但 UI 不再显示
     birthday = Column(Date, nullable=True)
+    personality = Column(Text, nullable=True)              # 性格描述
     contact_info = Column(Text, nullable=True)             # 加密存储
     preferences = Column(Text, nullable=True)              # JSON: 喜好偏好
     notes = Column(Text, nullable=True)                    # 相处要点（手动）
@@ -295,6 +296,7 @@ class RelationshipEvent(Base):
     key_info = Column(Text, nullable=True)
     my_feeling = Column(Text, nullable=True)
     next_action = Column(Text, nullable=True)
+    is_completed = Column(Boolean, default=False)          # 事件是否完成
     created_at = Column(DateTime, default=datetime.now)
 
     person = relationship("Person", back_populates="events")

@@ -19,7 +19,7 @@ class TongyuService:
     # === 人物管理 ===
 
     def create_person(self, name: str, relationship_type: str,
-                      birthday: date = None, met_date: date = None,
+                      birthday: date = None, personality: str = None,
                       avatar_emoji: str = "👤", notes: str = None) -> dict:
         """创建人物档案"""
         if not name.strip():
@@ -27,7 +27,7 @@ class TongyuService:
 
         person = self.db.create_person(
             name=name, relationship_type=relationship_type,
-            birthday=birthday, met_date=met_date,
+            birthday=birthday, personality=personality,
             avatar_emoji=avatar_emoji, notes=notes,
         )
         return {"success": True, "person": person, "message": f"已添加「{name}」"}
@@ -130,7 +130,7 @@ class TongyuService:
                   location: str = None, impression_tags: list[str] = None,
                   their_emotion: list[str] = None, topics: list[str] = None,
                   key_info: str = None, my_feeling: str = None,
-                  next_action: str = None) -> dict:
+                  next_action: str = None, is_completed: bool = False) -> dict:
         """添加人际事件"""
         if not description.strip():
             return {"success": False, "message": "事件描述不能为空"}
@@ -142,7 +142,7 @@ class TongyuService:
             their_emotion=json.dumps(their_emotion or [], ensure_ascii=False),
             topics=json.dumps(topics or [], ensure_ascii=False),
             key_info=key_info, my_feeling=my_feeling,
-            next_action=next_action,
+            next_action=next_action, is_completed=is_completed,
         )
         return {"success": True, "event": event, "message": "事件已记录"}
 
@@ -155,6 +155,17 @@ class TongyuService:
                 return {"success": False, "message": "事件不存在"}
             s.delete(event)
         return {"success": True, "message": "已删除"}
+
+    def toggle_event_completed(self, event_id: int) -> dict:
+        """切换事件完成状态"""
+        with self.db.session_scope() as s:
+            from database.models import RelationshipEvent
+            event = s.query(RelationshipEvent).filter(RelationshipEvent.id == event_id).first()
+            if not event:
+                return {"success": False, "message": "事件不存在"}
+            event.is_completed = not event.is_completed
+            s.flush()
+            return {"success": True, "is_completed": event.is_completed}
 
     def get_events(self, person_id: int, limit: int = 20) -> list[dict]:
         """获取人物事件列表"""

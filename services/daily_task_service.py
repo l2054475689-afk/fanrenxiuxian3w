@@ -65,27 +65,40 @@ class DailyTaskService:
         return {"success": True, "message": f"已删除: {name}"}
 
     def get_today_tasks(self) -> list[dict]:
-        """获取今天的任务（未完成在前，已完成在后）"""
+        """获取所有日常任务（不按日期过滤，任务持久保存）
+        每天重置完成状态但不删除任务本身"""
         today = date.today()
         with self.db.session_scope() as s:
-            tasks = s.query(DailyTask).filter(
-                DailyTask.created_date == today
-            ).order_by(
+            tasks = s.query(DailyTask).order_by(
                 DailyTask.is_completed,
                 DailyTask.priority.desc(),
                 DailyTask.created_at,
             ).all()
-            return [self._task_to_dict(t) for t in tasks]
+            result = []
+            for t in tasks:
+                d = self._task_to_dict(t)
+                # 如果完成日期不是今天，重置完成状态（新的一天）
+                if t.is_completed and t.completed_at:
+                    completed_date = t.completed_at.date() if hasattr(t.completed_at, 'date') else t.completed_at
+                    if completed_date != today:
+                        t.is_completed = False
+                        t.completed_at = None
+                        d = self._task_to_dict(t)
+                result.append(d)
+            return result
 
     def get_today_completion_rate(self) -> dict:
-        """获取今日完成率"""
+        """获取今日完成率（基于所有日常任务，今天是否完成）"""
         today = date.today()
         with self.db.session_scope() as s:
-            total = s.query(DailyTask).filter(DailyTask.created_date == today).count()
-            completed = s.query(DailyTask).filter(
-                DailyTask.created_date == today,
-                DailyTask.is_completed == True,
-            ).count()
+            tasks = s.query(DailyTask).all()
+            total = len(tasks)
+            completed = 0
+            for t in tasks:
+                if t.is_completed and t.completed_at:
+                    completed_date = t.completed_at.date() if hasattr(t.completed_at, 'date') else t.completed_at
+                    if completed_date == today:
+                        completed += 1
             rate = completed / total if total > 0 else 0
             return {
                 "total": total,

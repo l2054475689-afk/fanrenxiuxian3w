@@ -759,12 +759,98 @@ class XinjingPage(ft.Column):
         summary = self.svc.get_today_summary()
         stats_7d = self.svc.get_statistics(7)
         stats_30d = self.svc.get_statistics(30)
-        return ft.Column([
+
+        # 日常任务完成统计
+        daily_rate = self.daily_svc.get_today_completion_rate()
+
+        # 任务触发次数统计（从 records 中统计）
+        task_counts = self._get_task_trigger_counts()
+
+        controls = [
             section_title("今日"), self._summary_card(summary),
+            # 日常任务完成情况
+            section_title("日常任务"),
+            self._daily_stats_card(daily_rate),
             section_title("近7天趋势"), self._stats_bar_chart(7),
             section_title("近7天"), self._stats_data_card(stats_7d),
             section_title("近30天"), self._stats_data_card(stats_30d),
-        ], spacing=0)
+        ]
+
+        # 任务触发排行
+        if task_counts:
+            controls.append(section_title("任务触发排行"))
+            controls.append(self._task_trigger_card(task_counts))
+
+        return ft.Column(controls, spacing=0)
+
+    def _daily_stats_card(self, rate: dict) -> ft.Container:
+        """日常任务完成统计卡片"""
+        return ft.Container(
+            content=ft.Column([
+                ft.Row([
+                    ft.Text(f"📋 今日完成 {rate['completed']}/{rate['total']}", size=14,
+                            weight=ft.FontWeight.W_600, color=C.TEXT_PRIMARY),
+                    ft.Text(f"{rate['rate']*100:.0f}%", size=14,
+                            weight=ft.FontWeight.BOLD, color=C.SUCCESS if rate['rate'] >= 0.8 else C.WARNING),
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.ProgressBar(
+                    value=rate['rate'], height=6,
+                    color=C.SUCCESS if rate['rate'] >= 0.8 else C.WARNING,
+                    bgcolor=ft.Colors.with_opacity(0.12, C.TEXT_HINT),
+                    border_radius=3,
+                ),
+            ], spacing=8),
+            padding=16, margin=ft.Margin.symmetric(horizontal=16, vertical=4),
+            border_radius=14, bgcolor=C.CARD_LIGHT,
+            shadow=ft.BoxShadow(spread_radius=0, blur_radius=8,
+                                color=ft.Colors.with_opacity(0.06, ft.Colors.BLACK), offset=ft.Offset(0, 2)),
+        )
+
+    def _get_task_trigger_counts(self) -> list[dict]:
+        """统计所有任务的触发次数（包括正面、心魔、日常）"""
+        from datetime import timedelta
+        from datetime import date as dt_date
+        end = dt_date.today()
+        start = end - timedelta(days=30)
+        records = self.svc.db.get_records_in_range(start, end)
+
+        counts = {}
+        for r in records:
+            name = r.get("task_name", "未知")
+            if name not in counts:
+                counts[name] = {"name": name, "count": 0, "spirit": 0}
+            counts[name]["count"] += 1
+            counts[name]["spirit"] += r.get("spirit_change", 0)
+
+        result = sorted(counts.values(), key=lambda x: x["count"], reverse=True)
+        return result[:15]  # Top 15
+
+    def _task_trigger_card(self, task_counts: list[dict]) -> ft.Container:
+        """任务触发排行卡片"""
+        rows = []
+        for i, tc in enumerate(task_counts):
+            is_positive = tc["spirit"] >= 0
+            color = C.SUCCESS if is_positive else C.ERROR
+            rows.append(
+                ft.Container(
+                    content=ft.Row([
+                        ft.Text(f"#{i+1}", size=12, color=C.TEXT_HINT, width=28),
+                        ft.Text(tc["name"], size=13, color=C.TEXT_PRIMARY, expand=True),
+                        ft.Text(f"{tc['count']}次", size=13, weight=ft.FontWeight.W_600, color=color),
+                        ft.Text(f"{tc['spirit']:+d}", size=11, color=C.TEXT_SECONDARY, width=40,
+                                text_align=ft.TextAlign.RIGHT),
+                    ], vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                    padding=ft.Padding.symmetric(horizontal=4, vertical=6),
+                )
+            )
+
+        return ft.Container(
+            content=ft.Column(rows, spacing=2),
+            padding=12, margin=ft.Margin.symmetric(horizontal=16, vertical=4),
+            border_radius=14, bgcolor=C.CARD_LIGHT,
+            shadow=ft.BoxShadow(spread_radius=0, blur_radius=8,
+                                color=ft.Colors.with_opacity(0.06, ft.Colors.BLACK), offset=ft.Offset(0, 2)),
+        )
 
     def _summary_card(self, summary: dict) -> ft.Container:
         items = [

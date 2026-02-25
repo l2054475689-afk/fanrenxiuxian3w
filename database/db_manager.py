@@ -27,6 +27,28 @@ class DatabaseManager:
         self.engine = create_engine(f"sqlite:///{db_path}", echo=False)
         self.SessionFactory = sessionmaker(bind=self.engine)
         create_all_tables(self.engine)
+        self._migrate()
+
+    def _migrate(self):
+        """数据库迁移：为已有表添加新字段"""
+        from sqlalchemy import text, inspect
+        insp = inspect(self.engine)
+
+        # people 表加 personality 字段
+        if 'people' in insp.get_table_names():
+            cols = [c['name'] for c in insp.get_columns('people')]
+            if 'personality' not in cols:
+                with self.engine.connect() as conn:
+                    conn.execute(text('ALTER TABLE people ADD COLUMN personality TEXT'))
+                    conn.commit()
+
+        # relationship_events 表加 is_completed 字段
+        if 'relationship_events' in insp.get_table_names():
+            cols = [c['name'] for c in insp.get_columns('relationship_events')]
+            if 'is_completed' not in cols:
+                with self.engine.connect() as conn:
+                    conn.execute(text('ALTER TABLE relationship_events ADD COLUMN is_completed BOOLEAN DEFAULT 0'))
+                    conn.commit()
 
     @contextmanager
     def session_scope(self):
@@ -308,14 +330,22 @@ class DatabaseManager:
             }
 
     def get_streak(self, task_id: int) -> Optional[dict]:
-        """获取打卡记录"""
+        """获取打卡记录（实时判断连续性）"""
+        today = date.today()
         with self.session_scope() as s:
             streak = s.query(StreakRecord).filter(StreakRecord.task_id == task_id).first()
             if not streak:
                 return None
+            # 实时判断：如果最后打卡日期不是今天也不是昨天，连续打卡已断
+            actual_streak = streak.current_streak
+            if streak.last_completed_date and streak.last_completed_date < today - timedelta(days=1):
+                actual_streak = 0
+                # 持久化重置
+                streak.current_streak = 0
+                s.flush()
             return {
                 "task_id": streak.task_id,
-                "current_streak": streak.current_streak,
+                "current_streak": actual_streak,
                 "max_streak": streak.max_streak,
                 "last_completed_date": streak.last_completed_date,
             }
@@ -695,6 +725,7 @@ class DatabaseManager:
             "relationship_type": person.relationship_type,
             "met_date": str(person.met_date) if person.met_date else None,
             "birthday": str(person.birthday) if person.birthday else None,
+            "personality": person.personality if hasattr(person, 'personality') else None,
             "notes": person.notes, "ai_report": person.ai_report,
             "avatar_emoji": person.avatar_emoji, "is_active": person.is_active,
         }
@@ -721,4 +752,5 @@ class DatabaseManager:
             "their_emotion": event.their_emotion,
             "topics": event.topics, "key_info": event.key_info,
             "my_feeling": event.my_feeling, "next_action": event.next_action,
+            "is_completed": event.is_completed if hasattr(event, 'is_completed') else False,
         }

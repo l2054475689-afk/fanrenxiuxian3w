@@ -21,11 +21,11 @@ class RealmService:
                      completion_rate: int = 100, reward_spirit: int = 0,
                      realm_type: str = REALM_TYPE_MAIN) -> dict:
         """创建新境界"""
-        # 检查是否已有同类型活跃境界
-        existing = self.db.get_active_realm(realm_type)
-        if existing:
-            type_name = "主境界" if realm_type == REALM_TYPE_MAIN else "副本"
-            return {"success": False, "message": f"已有活跃{type_name}「{existing['name']}」，请先完成或归档"}
+        # 主境界只能有一个活跃的，副本可以有多个
+        if realm_type == REALM_TYPE_MAIN:
+            existing = self.db.get_active_realm(realm_type)
+            if existing:
+                return {"success": False, "message": f"已有活跃主境界「{existing['name']}」，请先完成或归档"}
 
         realm = self.db.create_realm(
             name=name, realm_type=realm_type,
@@ -39,8 +39,18 @@ class RealmService:
         return self.db.get_active_realm(REALM_TYPE_MAIN)
 
     def get_active_dungeon(self) -> Optional[dict]:
-        """获取当前副本境界"""
+        """获取当前副本境界（兼容旧接口，返回第一个）"""
         return self.db.get_active_realm(REALM_TYPE_DUNGEON)
+
+    def get_active_dungeons(self) -> list[dict]:
+        """获取所有活跃副本"""
+        with self.db.session_scope() as s:
+            from database.models import Realm
+            realms = s.query(Realm).filter(
+                Realm.realm_type == REALM_TYPE_DUNGEON,
+                Realm.status == "active",
+            ).order_by(Realm.started_at.desc()).all()
+            return [self.db._realm_to_dict(r) for r in realms]
 
     def get_completed_realms(self, realm_type: str = None) -> list[dict]:
         """获取已完成的境界列表，可按类型过滤"""

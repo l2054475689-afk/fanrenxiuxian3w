@@ -65,19 +65,7 @@ class SettingsPage(ft.Column):
                 ),
             ]),
 
-            # ── 显示设置 ──
-            self._group_header("显示"),
-            self._group_card([
-                self._switch_row(
-                    icon=ft.Icons.DARK_MODE_OUTLINED,
-                    icon_color="#5c6bc0",
-                    icon_bg="#e8eaf6",
-                    title="深色模式",
-                    subtitle="切换深色/浅色主题",
-                    value=config.get("dark_mode", False) if config else False,
-                    on_change=self._toggle_dark_mode,
-                ),
-            ]),
+            # 深色模式已移除（有 bug）
 
             # ── 数据管理 ──
             self._group_header("数据管理"),
